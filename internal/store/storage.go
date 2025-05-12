@@ -19,10 +19,15 @@ type Storage struct {
 		Update(context.Context , *Book) error
 		Delete (context.Context , int) error
 	}
+	Users interface {
+		Create(context.Context , *User) error
+		GetByEmail(context.Context , string) (*User , error)
+	}
 }
 
 func NewStorage(db *sql.DB) Storage {
 	return Storage{
 		Books: &BookStore{db},
+		Users: &UserStore{db},
 	}
 }
