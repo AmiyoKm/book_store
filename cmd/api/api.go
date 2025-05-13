@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/AmiyoKm/book_store/internal/mail"
 	"github.com/AmiyoKm/book_store/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -14,19 +15,28 @@ type Application struct {
 	cfg    Config
 	logger *zap.SugaredLogger
 	store  store.Storage
+	mail   mailer.Client
 }
 
 type Config struct {
-	addr   string
-	apiUrl string
-	env    string
-	db     DbConfig
+	addr        string
+	apiUrl      string
+	env         string
+	db          DbConfig
+	mail        MailConfig
+	frontendURL string
 }
 type DbConfig struct {
 	addr        string
 	maxConnOpen int
 	maxIdleConn int
 	maxIdleTime string
+}
+
+type MailConfig struct {
+	apiKey    string
+	fromEmail string
+	exp       time.Duration
 }
 
 func (app *Application) mount() http.Handler {
@@ -42,8 +52,6 @@ func (app *Application) mount() http.Handler {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/health", app.healthCheckHandler)
 
-
-
 		r.Route("/authentication", func(r chi.Router) {
 			r.Post("/user", app.createUserHandler)
 			r.Post("/token", app.createTokenHandler)
@@ -56,8 +64,8 @@ func (app *Application) mount() http.Handler {
 				r.Use(app.bookContextMiddleware)
 
 				r.Get("/", app.getBookHandler)
-				r.Patch("/" ,app.updateBookHandler)
-				r.Delete("/" , app.deleteBookHandler)
+				r.Patch("/", app.updateBookHandler)
+				r.Delete("/", app.deleteBookHandler)
 			})
 		})
 	})
@@ -84,4 +92,3 @@ func (app *Application) run(mux http.Handler) error {
 	app.logger.Infow("server has stopped", "addr", app.cfg.addr)
 	return nil
 }
-

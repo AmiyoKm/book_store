@@ -1,0 +1,101 @@
+{{define "subject"}} Finish Registration with BookBand {{end}}
+
+{{define "body"}}
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+      /* Global Styles */
+      body {
+        background-color: #eef2f6;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      /* Container */
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: #ffffff;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      /* Header */
+      .header {
+        text-align: center;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .header img {
+        height: 50px;
+        margin-bottom: 10px;
+      }
+      h1 {
+        color: #1f2937;
+        font-size: 26px;
+        margin-bottom: 10px;
+      }
+      p {
+        color: #4b5563;
+        line-height: 1.6;
+        margin: 10px 0;
+      }
+      /* Button */
+      .btn {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 14px 28px;
+        font-size: 16px;
+        background-color: #3b82f6;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        transition: background-color 0.3s ease;
+      }
+      .btn:hover {
+        background-color: #2563eb;
+        color: #ffffff;
+      }
+      /* Footer */
+      .footer {
+        margin-top: 40px;
+        font-size: 12px;
+        color: #9ca3af;
+        text-align: center;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <img src="https://static.vecteezy.com/system/resources/previews/021/916/224/non_2x/promo-banner-with-stack-of-books-globe-inkwell-quill-plant-lantern-ebook-world-book-day-bookstore-bookshop-library-book-lover-bibliophile-education-for-poster-cover-advertising-vector.jpg" alt="BookBand Logo" />
+        <h1>Welcome to BookBand, {{.Username}}!</h1>
+      </div>
+      <p>We're thrilled to have you join our community of book lovers!</p>
+      <p>
+        Before you can start exploring and sharing your reading journey, please confirm your email address by clicking the button below:
+      </p>
+      <p>
+        <a href="{{.ActivationURL}}" class="btn">Confirm Email Address</a>
+      </p>
+      <p>If the button doesn't work, you can also use this link:</p>
+      <p><a href="{{.ActivationURL}}">{{.ActivationURL}}</a></p>
+      <p>If you didn’t sign up for BookBand, feel free to ignore this email.</p>
+      <div class="footer">
+        <p>Happy Reading,<br />The BookBand Team</p>
+      </div>
+    </div>
+  </body>
+</html>
+{{end}}
