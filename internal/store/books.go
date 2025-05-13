@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"time"
-
 	"github.com/lib/pq"
 )
 
