@@ -4,7 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/AmiyoKm/book_store/internal/mail"
+	"github.com/AmiyoKm/book_store/internal/auth"
+	mailer "github.com/AmiyoKm/book_store/internal/mail"
 	"github.com/AmiyoKm/book_store/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -16,15 +17,31 @@ type Application struct {
 	logger *zap.SugaredLogger
 	store  store.Storage
 	mail   mailer.Client
+	auth   auth.Authenticator
 }
 
 type Config struct {
 	addr        string
+	auth        authConfig
 	apiUrl      string
 	env         string
 	db          DbConfig
 	mail        MailConfig
 	frontendURL string
+}
+type authConfig struct {
+	basic basicConfig
+	token tokenConfig
+}
+
+type tokenConfig struct {
+	secret string
+	exp    time.Duration
+	iss    string
+}
+type basicConfig struct {
+	user string
+	pass string
 }
 type DbConfig struct {
 	addr        string
