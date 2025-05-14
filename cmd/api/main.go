@@ -3,9 +3,10 @@ package main
 import (
 	"time"
 
+	"github.com/AmiyoKm/book_store/internal/auth"
 	"github.com/AmiyoKm/book_store/internal/db"
 	"github.com/AmiyoKm/book_store/internal/env"
-	"github.com/AmiyoKm/book_store/internal/mail"
+	mailer "github.com/AmiyoKm/book_store/internal/mail"
 	"github.com/AmiyoKm/book_store/internal/store"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
@@ -27,16 +28,28 @@ func main() {
 	mailCgf := MailConfig{
 		exp:       time.Hour * 24 * 3,
 		fromEmail: env.GetString("FROM_EMAIL", ""),
-		apiKey: env.GetString("APP_PASSWORD", ""),
+		apiKey:    env.GetString("APP_PASSWORD", ""),
 	}
 
+	authConfig := authConfig{
+		basic: basicConfig{
+			user: env.GetString("AUTH_BASIC_USER", "admin"),
+			pass: env.GetString("AUTH_BASIC_PASS", "admin"),
+		},
+		token: tokenConfig{
+			secret: env.GetString("AUTH_TOKEN_SECRET", "example"),
+			exp:    time.Hour * 24 * 3,
+			iss:    "BookBound",
+		},
+	}
 	config := Config{
 		db:          dbConfig,
 		env:         env.GetString("ENVIRONMENT", "DEVELOPMENT"),
 		addr:        env.GetString("ADDR", ":8080"),
 		apiUrl:      env.GetString("API_URL", "localhost:8080"),
 		frontendURL: env.GetString("FRONTEND_URL", "http://localhost:5173"),
-		mail: mailCgf,
+		mail:        mailCgf,
+		auth:        authConfig,
 	}
 
 	db, err := db.New(config.db.addr, config.db.maxConnOpen, config.db.maxIdleConn, config.db.maxIdleTime)
@@ -47,15 +60,17 @@ func main() {
 	logger.Info("DB connection pool established")
 
 	store := store.NewStorage(db)
-	mailClient , err := mailer.NewGoMailClient(config.mail.apiKey , config.mail.fromEmail)
+	mailClient, err := mailer.NewGoMailClient(config.mail.apiKey, config.mail.fromEmail)
 	if err != nil {
 		logger.Fatal(err)
 	}
+	JWTAuthenticator := auth.NewJWTAuthenticator(config.auth.token.secret, config.auth.token.iss, config.auth.token.iss)
 	app := &Application{
 		cfg:    config,
 		logger: logger,
 		store:  store,
-		mail: mailClient,
+		mail:   mailClient,
+		auth:   JWTAuthenticator,
 	}
 	mux := app.mount()
 	logger.Fatal(app.run(mux))

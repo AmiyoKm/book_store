@@ -5,9 +5,11 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
+	"time"
 
-	"github.com/AmiyoKm/book_store/internal/mail"
+	mailer "github.com/AmiyoKm/book_store/internal/mail"
 	"github.com/AmiyoKm/book_store/internal/store"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
@@ -135,7 +137,22 @@ func (app *Application) createTokenHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if err := jsonResponse(w, http.StatusOK, user); err != nil {
+	claims := jwt.MapClaims{
+		"sub": user.ID,
+		"exp": time.Now().Add(app.cfg.auth.token.exp).Unix(),
+		"iat": time.Now().Unix(),
+		"nbf": time.Now().Unix(),
+		"iss": app.cfg.auth.token.iss,
+		"aud": app.cfg.auth.token.iss,
+	}
+
+	token, err := app.auth.GenerateToken(claims)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	if err := jsonResponse(w, http.StatusOK, token); err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}
