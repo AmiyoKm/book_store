@@ -16,3 +16,9 @@ migrate-down:
 	@echo "Rolling back migrations..."
 	@migrate -source=file://${MIGRATION_PATH}  -database=postgres://admin:adminpassword@localhost:5432/book_store?sslmode=disable down
 	@echo "Rollback completed."
+
+.PHONY : gen-docs
+gen-docs:
+	@echo "Generating API documentation..."
+	@swag init -g ./api/main.go -d cmd,internal && swag fmt
+	@echo "API documentation generated successfully."

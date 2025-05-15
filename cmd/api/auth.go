@@ -24,7 +24,18 @@ type UserWithToken struct {
 	User  *store.User
 	Token string `json:"token"`
 }
-
+// registerUserHandler godoc
+//
+//	@Summary		Registers a user
+//	@Description	Registers a user
+//	@Tags			authentication
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		createUserPayload	true	"User credentials"
+//	@Success		201		{object}	UserWithToken		"User registered"
+//	@Failure		400		{object}	error
+//	@Failure		500		{object}	error
+//	@Router			/authentication/user [post]
 func (app *Application) createUserHandler(w http.ResponseWriter, r *http.Request) {
 	var payload createUserPayload
 
@@ -105,7 +116,19 @@ type loginUserPayload struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
 }
-
+// createTokenHandler godoc
+//
+//	@Summary		Creates a token
+//	@Description	Creates a token for a user
+//	@Tags			authentication
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		loginUserPayload	true	"User credentials"
+//	@Success		200		{string}	string				"Token"
+//	@Failure		400		{object}	error
+//	@Failure		401		{object}	error
+//	@Failure		500		{object}	error
+//	@Router			/authentication/token [post]
 func (app *Application) createTokenHandler(w http.ResponseWriter, r *http.Request) {
 	var payload loginUserPayload
 
