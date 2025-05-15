@@ -1,14 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/AmiyoKm/book_store/docs"
 	"github.com/AmiyoKm/book_store/internal/auth"
 	mailer "github.com/AmiyoKm/book_store/internal/mail"
 	"github.com/AmiyoKm/book_store/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"go.uber.org/zap"
 )
 
@@ -69,6 +72,9 @@ func (app *Application) mount() http.Handler {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/health", app.healthCheckHandler)
 
+		docsURL := fmt.Sprintf("%s/swagger/doc.json", app.cfg.addr)
+		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(docsURL)))
+
 		r.Route("/authentication", func(r chi.Router) {
 			r.Post("/user", app.createUserHandler)
 			r.Post("/token", app.createTokenHandler)
@@ -91,6 +97,9 @@ func (app *Application) mount() http.Handler {
 }
 
 func (app *Application) run(mux http.Handler) error {
+	docs.SwaggerInfo.Version = version
+	docs.SwaggerInfo.Host = app.cfg.apiUrl
+	docs.SwaggerInfo.BasePath = "/api/v1"
 	server := http.Server{
 		Addr:         app.cfg.addr,
 		Handler:      mux,
