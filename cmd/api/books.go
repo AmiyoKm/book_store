@@ -26,6 +26,19 @@ type createBookPayload struct {
 	Stock         int      `json:"stock" validate:"required,gte=0"`
 }
 
+// createBookHandler godoc
+//
+//	@Summary		Creates a book
+//	@Description	Creates a book
+//	@Tags			book
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		createBookPayload	true	"Book details"
+//	@Success		201		{object}	store.Book			"Book created"
+//	@Failure		400		{object}	error
+//	@Failure		500		{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/books [post]
 func (app *Application) createBookHandler(w http.ResponseWriter, r *http.Request) {
 	var payload createBookPayload
 
@@ -63,6 +76,19 @@ func (app *Application) createBookHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// getBookHandler godoc
+//
+//	@Summary		Get a book
+//	@Description	Get a book by its ID
+//	@Tags			book
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int			true	"Book ID"
+//	@Success		200	{object}	store.Book	"Book created"
+//	@Failure		400	{object}	error
+//	@Failure		500	{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/books/{id} [get]
 func (app *Application) getBookHandler(w http.ResponseWriter, r *http.Request) {
 	book := getBookFromContext(r)
 
@@ -84,6 +110,22 @@ type updateBookPayload struct {
 	Stock         *int      `json:"stock" validate:"omitempty,gte=0"`
 }
 
+// updateBookHandler godoc
+//
+//	@Summary		Update a book
+//	@Description	Update a book by its ID
+//	@Tags			book
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int					true	"Book ID"
+//	@Param			payload	body		updateBookPayload	true	"Update Book Payload"
+//	@Success		200		{object}	store.Book
+//	@Failure		400		{object}	error
+//	@Failure		401		{object}	error
+//	@Failure		404		{object}	error
+//	@Failure		500		{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/books/{id} [patch]
 func (app *Application) updateBookHandler(w http.ResponseWriter, r *http.Request) {
 	book := getBookFromContext(r)
 	ctx := r.Context()
@@ -148,25 +190,35 @@ func (app *Application) updateBookHandler(w http.ResponseWriter, r *http.Request
 
 }
 
-func (app *Application) deleteBookHandler(w http.ResponseWriter , r *http.Request) {
-	book :=getBookFromContext(r)
+// deleteBookHandler godoc
+//
+//	@Summary		deletes a book
+//	@Description	deletes a book by its ID
+//	@Tags			book
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int		true	"Book ID"
+//	@Success		204	{object}	string	"Book deleted"
+//	@Failure		404	{object}	error
+//	@Failure		500	{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/books{id} [delete]
+func (app *Application) deleteBookHandler(w http.ResponseWriter, r *http.Request) {
+	book := getBookFromContext(r)
 	ctx := r.Context()
-	err := app.store.Books.Delete(ctx , book.ID)
+	err := app.store.Books.Delete(ctx, book.ID)
 
 	if err != nil {
 		switch err {
 		case store.ErrorNotFound:
-			app.notFoundError(w,r,err)
+			app.notFoundError(w, r, err)
 			return
 		default:
-			app.internalServerError(w,r,err)
+			app.internalServerError(w, r, err)
 			return
 		}
 	}
-	if err := jsonResponse(w,http.StatusOK , nil) ; err != nil {
-		app.internalServerError(w,r,err)
-		return
-	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (app *Application) bookContextMiddleware(next http.Handler) http.Handler {

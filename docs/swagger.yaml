@@ -7,6 +7,43 @@ definitions:
       user:
         $ref: '#/definitions/store.User'
     type: object
+  main.createBookPayload:
+    properties:
+      author:
+        maxLength: 255
+        type: string
+      cover_image_url:
+        type: string
+      description:
+        maxLength: 1000
+        type: string
+      isbn:
+        type: string
+      pages:
+        maximum: 100000
+        minimum: 1
+        type: integer
+      price:
+        maximum: 100000
+        minimum: 0
+        type: integer
+      stock:
+        minimum: 0
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        maxLength: 255
+        type: string
+    required:
+    - author
+    - isbn
+    - price
+    - stock
+    - title
+    type: object
   main.createUserPayload:
     properties:
       email:
@@ -39,6 +76,68 @@ definitions:
     required:
     - email
     - password
+    type: object
+  main.updateBookPayload:
+    properties:
+      author:
+        maxLength: 50
+        type: string
+      cover_image_url:
+        type: string
+      description:
+        maxLength: 1000
+        type: string
+      isbn:
+        type: string
+      pages:
+        maximum: 100000
+        minimum: 1
+        type: integer
+      price:
+        maximum: 100000
+        minimum: 0
+        type: integer
+      stock:
+        minimum: 0
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        maxLength: 50
+        type: string
+    type: object
+  store.Book:
+    properties:
+      author:
+        type: string
+      cover_image_url:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      isbn:
+        type: string
+      pages:
+        type: integer
+      price:
+        type: integer
+      stock:
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      updated_at:
+        type: string
+      version:
+        type: integer
     type: object
   store.Role:
     properties:
@@ -141,6 +240,134 @@ paths:
       summary: Registers a user
       tags:
       - authentication
+  /books:
+    post:
+      consumes:
+      - application/json
+      description: Creates a book
+      parameters:
+      - description: Book details
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.createBookPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Book created
+          schema:
+            $ref: '#/definitions/store.Book'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Creates a book
+      tags:
+      - book
+  /books/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a book by its ID
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Book created
+          schema:
+            $ref: '#/definitions/store.Book'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get a book
+      tags:
+      - book
+    patch:
+      consumes:
+      - application/json
+      description: Update a book by its ID
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Book Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.updateBookPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Book'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Update a book
+      tags:
+      - book
+  /books{id}:
+    delete:
+      consumes:
+      - application/json
+      description: deletes a book by its ID
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Book deleted
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: deletes a book
+      tags:
+      - book
 securityDefinitions:
   ApiKeyAuth:
     in: header
