@@ -26,6 +26,10 @@ type Storage struct {
 		GetByEmail(context.Context, string) (*User, error)
 		CreateAndInvite(context.Context, *User, string, time.Duration) error
 		Delete(context.Context, int) error
+		GetByID(ctx context.Context, ID int) (*User, error)
+	}
+	Roles interface {
+		GetByName(ctx context.Context, name string) (*Role, error)
 	}
 }
 
@@ -33,6 +37,7 @@ func NewStorage(db *sql.DB) Storage {
 	return Storage{
 		Books: &BookStore{db},
 		Users: &UserStore{db},
+		Roles: &RoleStore{db},
 	}
 }
 

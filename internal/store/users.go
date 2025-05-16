@@ -58,6 +58,38 @@ func (s *UserStore) Create(ctx context.Context, user *User) error {
 	}
 	return nil
 }
+func (s *UserStore) GetByID(ctx context.Context, ID int) (*User, error) {
+	query := `select users.id , username , email , password , created_at , roles.* from users
+    join roles on (users.role_id = roles.id)
+    where users.id = $1`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeDuration)
+	defer cancel()
+
+	user := &User{}
+
+	err := s.db.QueryRowContext(ctx, query, ID).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.Password.Hash,
+		&user.CreatedAt,
+		&user.Role.ID,
+		&user.Role.Name,
+		&user.Role.Level,
+		&user.Role.Description,
+	)
+
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			return nil, ErrorNotFound
+		default:
+			return nil, err
+		}
+	}
+	return user, nil
+}
 func (s *UserStore) GetByEmail(ctx context.Context, email string) (*User, error) {
 	query := `select id , username , email , password , created_at ,role_id from users where email = $1`
 
@@ -113,10 +145,10 @@ func (s *UserStore) Delete(ctx context.Context, userID int) error {
 func (s *UserStore) deleteUserInvitation(ctx context.Context, tx *sql.Tx, userID int) error {
 	query := `delete from user_invitations where user_id = $1`
 
-	ctx , cancel := context.WithTimeout(ctx , QueryTimeDuration)
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeDuration)
 	defer cancel()
 
-	_ , err := tx.ExecContext(ctx,query , userID)
+	_, err := tx.ExecContext(ctx, query, userID)
 	if err != nil {
 		return err
 	}
@@ -126,10 +158,10 @@ func (s *UserStore) deleteUserInvitation(ctx context.Context, tx *sql.Tx, userID
 func (s *UserStore) delete(ctx context.Context, tx *sql.Tx, userID int) error {
 	query := `delete from users where id = $1`
 
-	ctx , cancel := context.WithTimeout(ctx , QueryTimeDuration)
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeDuration)
 	defer cancel()
 
-	_ , err := tx.ExecContext(ctx,query , userID)
+	_, err := tx.ExecContext(ctx, query, userID)
 	if err != nil {
 		return err
 	}
