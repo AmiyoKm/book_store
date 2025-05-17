@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS books (
     author VARCHAR(255) NOT NULL,
     isbn VARCHAR(50) NOT NULL,
     description TEXT,
-    price INT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
     stock INT NOT NULL,
     tags TEXT[],
     pages INT NOT NULL,

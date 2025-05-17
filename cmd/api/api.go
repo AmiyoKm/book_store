@@ -89,9 +89,21 @@ func (app *Application) mount() http.Handler {
 				r.Use(app.bookContextMiddleware)
 
 				r.Get("/", app.getBookHandler)
-				
+
 				r.Patch("/", app.checkBookManipulationAuthority("moderator", app.updateBookHandler))
 				r.Delete("/", app.checkBookManipulationAuthority("moderator", app.deleteBookHandler))
+			})
+		})
+
+		r.Route("/orders", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
+			r.Post("/", app.createOrderHandler)
+			//r.Get("/" ,  app.getAllOrdersHandler)
+			r.Route("/{orderID}", func(r chi.Router) {
+				r.Use(app.orderContextMiddleware)
+				r.Get("/", app.getOrderHandler)
+				// r.Patch("/" , app.updateOderHandler)
+				// r.Delete("/" , app.deleteOderHandler)
 			})
 		})
 	})

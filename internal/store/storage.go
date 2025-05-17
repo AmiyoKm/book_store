@@ -31,13 +31,18 @@ type Storage struct {
 	Roles interface {
 		GetByName(ctx context.Context, name string) (*Role, error)
 	}
+	Orders interface {
+		GetByID(context.Context, int) (*Order, error)
+		Create(ctx context.Context, order *Order) error
+	}
 }
 
 func NewStorage(db *sql.DB) Storage {
 	return Storage{
-		Books: &BookStore{db},
-		Users: &UserStore{db},
-		Roles: &RoleStore{db},
+		Books:  &BookStore{db},
+		Users:  &UserStore{db},
+		Roles:  &RoleStore{db},
+		Orders: &OrderStore{db},
 	}
 }
 
