@@ -34,6 +34,8 @@ type Storage struct {
 	Orders interface {
 		GetByID(context.Context, int) (*Order, error)
 		Create(ctx context.Context, order *Order) error
+		Get(ctx context.Context, userID int) ([]Order, error)
+		Update(context.Context, *Order) error
 	}
 }
 

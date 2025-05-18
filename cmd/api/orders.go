@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -66,10 +67,135 @@ func (app *Application) createOrderHandler(w http.ResponseWriter, r *http.Reques
 }
 func (app *Application) getOrderHandler(w http.ResponseWriter, r *http.Request) {
 	order := getOrderFromContext(r)
-	
+
 	if order == nil {
 		app.notFoundError(w, r, nil)
 		return
+	}
+	if err := jsonResponse(w, http.StatusAccepted, order); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+}
+
+func (app *Application) getAllOrdersHandler(w http.ResponseWriter, r *http.Request) {
+	user := getUserFromContext(r)
+
+	if user == nil {
+		app.unauthorizedError(w, r, fmt.Errorf("unauthorized user"))
+		return
+	}
+	ctx := r.Context()
+	orders, err := app.store.Orders.Get(ctx, user.ID)
+
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+	if err := jsonResponse(w, http.StatusOK, orders); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+}
+
+type updateOrderPayload struct {
+	ShippingAddress *string `json:"shipping_address" validate:"min=1"`
+}
+
+func (app *Application) updateOderHandler(w http.ResponseWriter, r *http.Request) {
+	user := getUserFromContext(r)
+	order := getOrderFromContext(r)
+
+	if user == nil {
+		app.unauthorizedError(w, r, fmt.Errorf("unauthorized user"))
+		return
+	}
+	if order == nil {
+		app.notFoundError(w, r, fmt.Errorf("order not found"))
+		return
+	}
+	var payload updateOrderPayload
+
+	if err := readJson(w, r, &payload); err != nil {
+		app.badRequestError(w, r, err)
+		return
+	}
+	if err := validate.Struct(payload); err != nil {
+		app.badRequestError(w, r, err)
+		return
+	}
+
+	if payload.ShippingAddress != nil {
+		order.ShippingAddress = *payload.ShippingAddress
+	}
+
+	err := app.store.Orders.Update(r.Context(), order)
+	if err != nil {
+		switch err {
+		case store.ErrorNotFound:
+			app.notFoundError(w, r, err)
+			return
+		default:
+			app.internalServerError(w, r, err)
+			return
+		}
+	}
+	if err := jsonResponse(w, http.StatusAccepted, order); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+}
+
+type updateOrderAdminPayload struct {
+	ShippingAddress *string `json:"address" validate:"omitempty,min=1"`
+	PaymentMethod   *string `json:"payment_method" validate:"required,oneof=cash_on_delivery Bkash credit_card"`
+	Status          *string `json:"status" validate:"omitempty,oneof=pending processing shipped delivered cancelled returned failed refunded"`
+}
+
+func (app *Application) updateAdminOrderHandler(w http.ResponseWriter, r *http.Request) {
+	user := getUserFromContext(r)
+	order := getOrderFromContext(r)
+
+	if user == nil {
+		app.unauthorizedError(w, r, fmt.Errorf("unauthorized user"))
+		return
+	}
+	if order == nil {
+		app.notFoundError(w, r, fmt.Errorf("order not found"))
+		return
+	}
+	var payload updateOrderAdminPayload
+
+	if err := readJson(w, r, &payload); err != nil {
+		app.badRequestError(w, r, err)
+		return
+	}
+	if err := validate.Struct(payload); err != nil {
+		app.badRequestError(w, r, err)
+		return
+	}
+
+	if payload.ShippingAddress != nil {
+		order.ShippingAddress = *payload.ShippingAddress
+	}
+	if payload.Status != nil {
+		order.Status = *payload.Status
+	}
+	if payload.PaymentMethod != nil {
+		order.PaymentMethod = *payload.PaymentMethod
+	}
+
+	err := app.store.Orders.Update(r.Context(), order)
+	if err != nil {
+		switch err {
+		case store.ErrorNotFound:
+			app.notFoundError(w, r, err)
+			return
+		default:
+			app.internalServerError(w, r, err)
+			return
+		}
 	}
 	if err := jsonResponse(w, http.StatusAccepted, order); err != nil {
 		app.internalServerError(w, r, err)

@@ -64,19 +64,35 @@ func (app *Application) getUser(ctx context.Context, userID int64) (*store.User,
 	return user, nil
 }
 
-func (app *Application) checkBookManipulationAuthority(requiredRole string , next http.HandlerFunc) http.HandlerFunc {
+func (app *Application) checkBookManipulationAuthority(requiredRole string, next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := getUserFromContext(r)
-		allowed , err := app.checkRolePrecedence(r.Context(), user , requiredRole)
+		allowed, err := app.checkRolePrecedence(r.Context(), user, requiredRole)
 		if err != nil {
-			app.internalServerError(w,r,err)
+			app.internalServerError(w, r, err)
 			return
 		}
 		if !allowed {
 			app.forbiddenError(w, r)
 			return
 		}
-		next.ServeHTTP(w,r)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *Application) adminCheck(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := getUserFromContext(r)
+
+		if user == nil {
+			app.unauthorizedError(w, r, fmt.Errorf("unauthorized user"))
+			return
+		}
+		if user.Role.Level == 1 {
+			app.forbiddenError(w, r)
+			return
+		}
+		next.ServeHTTP(w, r)
 	})
 }
 

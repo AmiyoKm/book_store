@@ -97,13 +97,27 @@ func (app *Application) mount() http.Handler {
 
 		r.Route("/orders", func(r chi.Router) {
 			r.Use(app.AuthTokenMiddleware)
+
 			r.Post("/", app.createOrderHandler)
-			//r.Get("/" ,  app.getAllOrdersHandler)
+			r.Get("/", app.getAllOrdersHandler)
+
 			r.Route("/{orderID}", func(r chi.Router) {
 				r.Use(app.orderContextMiddleware)
 				r.Get("/", app.getOrderHandler)
-				// r.Patch("/" , app.updateOderHandler)
+
+				r.Patch("/", app.updateOderHandler)
 				// r.Delete("/" , app.deleteOderHandler)
+			})
+		})
+		r.Route("/admin" , func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
+			r.Use(app.adminCheck)
+
+			r.Route("/orders" , func(r chi.Router) {
+
+				r.Route("/{orderID}" ,func(r chi.Router) {
+					r.Patch("/" , app.updateAdminOrderHandler)
+				})
 			})
 		})
 	})
