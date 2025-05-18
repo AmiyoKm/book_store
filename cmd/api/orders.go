@@ -148,8 +148,8 @@ func (app *Application) updateOderHandler(w http.ResponseWriter, r *http.Request
 }
 
 type updateOrderAdminPayload struct {
-	ShippingAddress *string `json:"address" validate:"omitempty,min=1"`
-	PaymentMethod   *string `json:"payment_method" validate:"required,oneof=cash_on_delivery Bkash credit_card"`
+	ShippingAddress *string `json:"shipping_address" validate:"omitempty,min=1"`
+	PaymentMethod   *string `json:"payment_method" validate:"omitempty,oneof=cash_on_delivery Bkash credit_card"`
 	Status          *string `json:"status" validate:"omitempty,oneof=pending processing shipped delivered cancelled returned failed refunded"`
 }
 

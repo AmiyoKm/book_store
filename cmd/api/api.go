@@ -109,14 +109,16 @@ func (app *Application) mount() http.Handler {
 				// r.Delete("/" , app.deleteOderHandler)
 			})
 		})
-		r.Route("/admin" , func(r chi.Router) {
+		r.Route("/admin", func(r chi.Router) {
 			r.Use(app.AuthTokenMiddleware)
 			r.Use(app.adminCheck)
 
-			r.Route("/orders" , func(r chi.Router) {
+			r.Route("/orders", func(r chi.Router) {
 
-				r.Route("/{orderID}" ,func(r chi.Router) {
-					r.Patch("/" , app.updateAdminOrderHandler)
+				r.Route("/{orderID}", func(r chi.Router) {
+					r.Use(app.orderContextMiddleware)
+
+					r.Patch("/", app.updateAdminOrderHandler)
 				})
 			})
 		})
