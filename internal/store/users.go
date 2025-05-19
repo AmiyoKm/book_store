@@ -19,6 +19,12 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+type PasswordChangeRequest struct {
+	UserID int
+	Token  string
+	Expiry time.Time
+	Used   bool
+}
 
 type UserStore struct {
 	db *sql.DB
@@ -165,7 +171,70 @@ func (s *UserStore) Delete(ctx context.Context, userID int) error {
 		return nil
 	})
 }
+func (s *UserStore) CreatePasswordRequest(ctx context.Context, user *User, token string, expiration time.Duration) (*int, error) {
+	query := `INSERT INTO password_change_requests (token , user_id , expiry)
+	VALUES ($1 , $2 , $3) RETURNING id`
 
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeDuration)
+	defer cancel()
+	var ID *int
+	err := s.db.QueryRowContext(ctx, query, token, user.ID, time.Now().Add(expiration)).Scan(&ID)
+	if err != nil {
+		return nil, err
+	}
+	return ID, nil
+}
+func (s *UserStore) GetPasswordRequest(ctx context.Context, token string) (*PasswordChangeRequest, error) {
+	query := `SELECT user_id, token, expiry, used
+    FROM password_change_requests
+    WHERE token = $1`
+
+	req := &PasswordChangeRequest{}
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeDuration)
+	defer cancel()
+
+	err := s.db.QueryRowContext(ctx, query, token).Scan(
+		&req.UserID, &req.Token, &req.Expiry, &req.Used,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrorNotFound
+		}
+		return nil, err
+	}
+	return req, nil
+}
+func (s *UserStore) DeletePasswordRequest(ctx context.Context, ID int) error {
+	query := `DELETE FROM password_change_requests WHERE id = $1`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeDuration)
+	defer cancel()
+
+	_, err := s.db.ExecContext(ctx, query, ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (s *UserStore) UpdatePassword(ctx context.Context, userID int, password *Password) error {
+	query := `UPDATE users SET password = $1 WHERE id = $2`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeDuration)
+	defer cancel()
+
+	_, err := s.db.ExecContext(ctx, query, password.Hash, userID)
+	return err
+}
+func (s *UserStore) MarkPasswordRequestAsUsed(ctx context.Context, hashToken string) error {
+	query := `
+    UPDATE password_change_requests
+    SET used = TRUE
+    WHERE token = $1
+    `
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeDuration)
+	defer cancel()
+	_, err := s.db.ExecContext(ctx, query, hashToken)
+	return err
+}
 func (s *UserStore) deleteUserInvitation(ctx context.Context, tx *sql.Tx, userID int) error {
 	query := `delete from user_invitations where user_id = $1`
 

@@ -84,11 +84,16 @@ func (app *Application) mount() http.Handler {
 			r.Use(app.AuthTokenMiddleware)
 
 			r.Route("/me", func(r chi.Router) {
-				r.Get("/" , app.getUserHandler)
-				r.Patch("/" , app.updateUserHandler)
+				r.Get("/", app.getUserHandler)
+				r.Patch("/", app.updateUserHandler)
 			})
 
-			
+			r.Route("/password", func(r chi.Router) {
+				r.Post("/reset-request", app.passwordResetRequestHandler)
+				r.Get("/request/verify" ,app.passwordRequestVerifyHandler)
+				r.Post("/reset", app.passwordResetHandler)
+			})
+
 		})
 
 		r.Route("/books", func(r chi.Router) {

@@ -1,0 +1,1 @@
+ALTER TABLE password_change_requests DROP COLUMN used;
