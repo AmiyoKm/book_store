@@ -216,6 +216,25 @@ func (s *UserStore) DeletePasswordRequest(ctx context.Context, ID int) error {
 	}
 	return nil
 }
+func (s *UserStore) UpdatePassword(ctx context.Context, userID int, password *Password) error {
+	query := `UPDATE users SET password = $1 WHERE id = $2`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeDuration)
+	defer cancel()
+
+	_, err := s.db.ExecContext(ctx, query, password.Hash, userID)
+	return err
+}
+func (s *UserStore) MarkPasswordRequestAsUsed(ctx context.Context, hashToken string) error {
+	query := `
+    UPDATE password_change_requests
+    SET used = TRUE
+    WHERE token = $1
+    `
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeDuration)
+	defer cancel()
+	_, err := s.db.ExecContext(ctx, query, hashToken)
+	return err
+}
 func (s *UserStore) deleteUserInvitation(ctx context.Context, tx *sql.Tx, userID int) error {
 	query := `delete from user_invitations where user_id = $1`
 

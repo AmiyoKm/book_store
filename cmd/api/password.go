@@ -63,7 +63,7 @@ func (app *Application) passwordRequestVerifyHandler(w http.ResponseWriter, r *h
 		return
 	}
 	hash := sha256.Sum256([]byte(plainToken))
-    hashToken := hex.EncodeToString(hash[:])
+	hashToken := hex.EncodeToString(hash[:])
 	ctx := r.Context()
 
 	request, err := app.store.Users.GetPasswordRequest(ctx, hashToken)
@@ -95,6 +95,54 @@ func (app *Application) passwordRequestVerifyHandler(w http.ResponseWriter, r *h
 	}
 }
 
-func (app *Application) passwordResetHandler(w http.ResponseWriter, r *http.Request) {
+type passwordResetPayload struct {
+	UserID      int    `json:"user_id" validate:"required"`
+	Token       string `json:"token" validate:"required"`
+	NewPassword string `json:"new_password" validate:"required,min=5"`
+}
 
+func (app *Application) passwordResetHandler(w http.ResponseWriter, r *http.Request) {
+	var payload passwordResetPayload
+	if err := readJson(w, r, &payload); err != nil {
+		app.badRequestError(w, r, err)
+		return
+	}
+
+	if err := validate.Struct(payload); err != nil {
+		app.badRequestError(w, r, err)
+		return
+	}
+
+	hash := sha256.Sum256([]byte(payload.Token))
+	hashToken := hex.EncodeToString(hash[:])
+
+	ctx := r.Context()
+	request, err := app.store.Users.GetPasswordRequest(ctx, hashToken)
+	if err != nil {
+		if errors.Is(err, store.ErrorNotFound) {
+			app.notFoundError(w, r, fmt.Errorf("invalid or expired token"))
+		} else {
+			app.internalServerError(w, r, err)
+		}
+		return
+	}
+	if request.UserID != payload.UserID {
+		app.unauthorizedError(w, r, fmt.Errorf("unauthorized access"))
+		return
+	}
+
+	hashedPassword := &store.Password{}
+	hashedPassword.Set(payload.NewPassword)
+
+	if err := app.store.Users.UpdatePassword(ctx, payload.UserID, hashedPassword); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+	if err := app.store.Users.MarkPasswordRequestAsUsed(ctx, hashToken); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	app.logger.Infof("Password successfully reset for user ID: %d", payload.UserID)
+	jsonResponse(w, http.StatusOK, map[string]string{"message": "Password updated successfully"})
 }
