@@ -28,6 +28,8 @@ type Storage struct {
 		Delete(context.Context, int) error
 		GetByID(ctx context.Context, ID int) (*User, error)
 		Update(context.Context, *User) error
+		CreatePasswordRequest(context.Context, *User, string, time.Duration) (*int, error)
+		DeletePasswordRequest(context.Context, int) error
 	}
 	Roles interface {
 		GetByName(ctx context.Context, name string) (*Role, error)
