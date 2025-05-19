@@ -27,6 +27,7 @@ type Storage struct {
 		CreateAndInvite(context.Context, *User, string, time.Duration) error
 		Delete(context.Context, int) error
 		GetByID(ctx context.Context, ID int) (*User, error)
+		Update(context.Context, *User) error
 	}
 	Roles interface {
 		GetByName(ctx context.Context, name string) (*Role, error)
