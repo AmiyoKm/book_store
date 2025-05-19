@@ -80,6 +80,17 @@ func (app *Application) mount() http.Handler {
 			r.Post("/token", app.createTokenHandler)
 		})
 
+		r.Route("/users", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
+
+			r.Route("/me", func(r chi.Router) {
+				r.Get("/" , app.getUserHandler)
+				r.Patch("/" , app.updateUserHandler)
+			})
+
+			
+		})
+
 		r.Route("/books", func(r chi.Router) {
 			r.Use(app.AuthTokenMiddleware)
 
@@ -106,7 +117,7 @@ func (app *Application) mount() http.Handler {
 				r.Get("/", app.getOrderHandler)
 
 				r.Patch("/", app.updateOderHandler)
-				// r.Delete("/" , app.deleteOderHandler)
+
 			})
 		})
 		r.Route("/admin", func(r chi.Router) {

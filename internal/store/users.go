@@ -117,7 +117,31 @@ func (s *UserStore) GetByEmail(ctx context.Context, email string) (*User, error)
 	}
 	return user, nil
 }
+func (s *UserStore) Update(ctx context.Context, user *User) error {
+	query := `UPDATE users
+	SET username = $1 WHERE id = $2
+	`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeDuration)
+	defer cancel()
 
+	row, err := s.db.ExecContext(ctx, query, user.Username, user.ID)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			return ErrorNotFound
+		default:
+			return err
+		}
+	}
+	affected, err := row.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affected == 0 {
+		return ErrorNotFound
+	}
+	return nil
+}
 func (s *UserStore) CreateAndInvite(ctx context.Context, user *User, token string, exp time.Duration) error {
 	return withTx(s.db, ctx, func(tx *sql.Tx) error {
 		if err := s.Create(ctx, user); err != nil {
