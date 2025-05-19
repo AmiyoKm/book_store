@@ -30,6 +30,7 @@ type Storage struct {
 		Update(context.Context, *User) error
 		CreatePasswordRequest(context.Context, *User, string, time.Duration) (*int, error)
 		DeletePasswordRequest(context.Context, int) error
+		GetPasswordRequest(context.Context, string) (*PasswordChangeRequest, error)
 	}
 	Roles interface {
 		GetByName(ctx context.Context, name string) (*Role, error)

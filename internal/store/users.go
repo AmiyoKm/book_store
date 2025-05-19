@@ -19,6 +19,12 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+type PasswordChangeRequest struct {
+	UserID int
+	Token  string
+	Expiry time.Time
+	Used   bool
+}
 
 type UserStore struct {
 	db *sql.DB
@@ -177,6 +183,26 @@ func (s *UserStore) CreatePasswordRequest(ctx context.Context, user *User, token
 		return nil, err
 	}
 	return ID, nil
+}
+func (s *UserStore) GetPasswordRequest(ctx context.Context, token string) (*PasswordChangeRequest, error) {
+	query := `SELECT user_id, token, expiry, used
+    FROM password_change_requests
+    WHERE token = $1`
+
+	req := &PasswordChangeRequest{}
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeDuration)
+	defer cancel()
+
+	err := s.db.QueryRowContext(ctx, query, token).Scan(
+		&req.UserID, &req.Token, &req.Expiry, &req.Used,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrorNotFound
+		}
+		return nil, err
+	}
+	return req, nil
 }
 func (s *UserStore) DeletePasswordRequest(ctx context.Context, ID int) error {
 	query := `DELETE FROM password_change_requests WHERE id = $1`

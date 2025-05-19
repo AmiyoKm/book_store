@@ -3,10 +3,13 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	mailer "github.com/AmiyoKm/book_store/internal/mail"
+	"github.com/AmiyoKm/book_store/internal/store"
 	"github.com/google/uuid"
 )
 
@@ -50,4 +53,48 @@ func (app *Application) passwordResetRequestHandler(w http.ResponseWriter, r *ht
 		app.internalServerError(w, r, err)
 		return
 	}
+}
+
+func (app *Application) passwordRequestVerifyHandler(w http.ResponseWriter, r *http.Request) {
+	plainToken := r.URL.Query().Get("token")
+
+	if plainToken == "" {
+		app.badRequestError(w, r, fmt.Errorf("token is required"))
+		return
+	}
+	hash := sha256.Sum256([]byte(plainToken))
+    hashToken := hex.EncodeToString(hash[:])
+	ctx := r.Context()
+
+	request, err := app.store.Users.GetPasswordRequest(ctx, hashToken)
+	if err != nil {
+		if errors.Is(err, store.ErrorNotFound) {
+			app.notFoundError(w, r, fmt.Errorf("invalid or expired token"))
+		} else {
+			app.internalServerError(w, r, err)
+		}
+		return
+	}
+
+	if request.Used {
+		app.badRequestError(w, r, fmt.Errorf("token already used"))
+		return
+	}
+
+	if time.Now().After(request.Expiry) {
+		app.badRequestError(w, r, fmt.Errorf("token expired"))
+		return
+	}
+	response := map[string]string{
+		"message": "Token is valid",
+		"user_id": fmt.Sprintf("%d", request.UserID),
+	}
+
+	if err := jsonResponse(w, http.StatusOK, response); err != nil {
+		app.internalServerError(w, r, err)
+	}
+}
+
+func (app *Application) passwordResetHandler(w http.ResponseWriter, r *http.Request) {
+
 }
