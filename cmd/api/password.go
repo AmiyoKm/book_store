@@ -14,7 +14,7 @@ import (
 )
 
 type passwordResetRequestPayload struct {
-	Email string `json:"email" validate:"required,mail"`
+	Email string `json:"email" validate:"required,email"`
 }
 
 func (app *Application) passwordResetRequestHandler(w http.ResponseWriter, r *http.Request) {
