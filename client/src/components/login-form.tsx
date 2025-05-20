@@ -11,11 +11,37 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BookOpen } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { login } from "@/config/api/auth";
+import type { LoginPayload } from "@/types/auth";
+import { useNavigate } from "react-router";
 
 export function LoginForm({
 	className,
 	...props
 }: React.ComponentPropsWithoutRef<"div">) {
+	const navigate = useNavigate();
+	const mutation = useMutation({
+		mutationFn: login,
+		onSuccess: (data) => {
+			localStorage.setItem("token", data.data);
+			navigate("/home");
+		},
+	});
+	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		const form = e.currentTarget;
+
+		const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+		const password = (form.elements.namedItem("password") as HTMLInputElement)
+			.value;
+
+		const payload: LoginPayload = {
+			email,
+			password,
+		};
+		mutation.mutate(payload);
+	};
 	return (
 		<div className={cn("flex flex-col gap-6", className)} {...props}>
 			<Card className="border-purple-600">
@@ -29,13 +55,14 @@ export function LoginForm({
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<form>
+					<form onSubmit={handleSubmit}>
 						<div className="flex flex-col gap-4">
 							<div className="grid gap-2">
 								<Label htmlFor="email">Email</Label>
 								<Input
 									id="email"
 									type="email"
+									name="email"
 									placeholder="you@example.com"
 									required
 								/>
@@ -44,15 +71,19 @@ export function LoginForm({
 								<div className="flex items-center">
 									<Label htmlFor="password">Password</Label>
 									<a
-										href="#"
+										href="/forgot-password"
 										className="ml-auto inline-block text-sm  underline-offset-4 hover:underline"
 									>
 										Forgot password?
 									</a>
 								</div>
-								<Input id="password" type="password" required />
+								<Input id="password" type="password" name="password" required />
 							</div>
-							<Button type="submit" className="w-full">
+							<Button
+								type="submit"
+								className="w-full"
+								disabled={mutation.isPending}
+							>
 								Login
 							</Button>
 						</div>
