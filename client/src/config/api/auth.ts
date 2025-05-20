@@ -1,4 +1,4 @@
-import type { LoginPayload, SignUpPayload } from "@/types/auth";
+import type { ChangePasswordPayload, LoginPayload, SignUpPayload } from "@/types/auth";
 import api from "../axios";
 
 export function signUp(data: SignUpPayload) {
@@ -7,4 +7,19 @@ export function signUp(data: SignUpPayload) {
 
 export function login(data: LoginPayload) {
     return api.post("/authentication/token", data)
+}
+export function activateUser(token: string) {
+    return api.put(`/authentication/activate/${token}`);
+}
+
+export function passwordCheckValidation(token: string) {
+    return api.get(`/password/request/verify?token=${token}`)
+}
+
+export function passwordChange(data: ChangePasswordPayload) {
+    return api.post("/password/reset", data)
+}
+
+export function passwordResetRequest(data: { email: string }) {
+    return api.post("/password/reset-request",data)
 }
