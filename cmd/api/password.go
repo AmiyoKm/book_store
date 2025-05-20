@@ -13,14 +13,38 @@ import (
 	"github.com/google/uuid"
 )
 
+type passwordResetRequestPayload struct {
+	Email string `json:"email" validate:"required,mail"`
+}
+
 func (app *Application) passwordResetRequestHandler(w http.ResponseWriter, r *http.Request) {
-	user := getUserFromContext(r)
+	var payload passwordResetRequestPayload
 
+	if err := readJson(w, r, &payload); err != nil {
+		app.badRequestError(w, r, err)
+		return
+	}
+	if err := validate.Struct(payload); err != nil {
+		app.badRequestError(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+	user, err := app.store.Users.GetByEmail(ctx, payload.Email)
+	if err != nil {
+		switch err {
+		case store.ErrorNotFound:
+			app.notFoundError(w, r, err)
+			return
+		default:
+			app.internalServerError(w, r, err)
+			return
+		}
+	}
 	plainToken := uuid.New().String()
-
 	hash := sha256.Sum256([]byte(plainToken))
 	hashToken := hex.EncodeToString(hash[:])
-	ctx := r.Context()
+
 	ID, err := app.store.Users.CreatePasswordRequest(ctx, user, hashToken, app.cfg.mail.exp)
 
 	if err != nil {

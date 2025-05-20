@@ -33,6 +33,7 @@ type Storage struct {
 		GetPasswordRequest(context.Context, string) (*PasswordChangeRequest, error)
 		UpdatePassword(context.Context, int, *Password) error
 		MarkPasswordRequestAsUsed(ctx context.Context, hashToken string) error
+		Activate(context.Context, string) error
 	}
 	Roles interface {
 		GetByName(ctx context.Context, name string) (*Role, error)

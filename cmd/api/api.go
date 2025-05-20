@@ -11,6 +11,7 @@ import (
 	"github.com/AmiyoKm/book_store/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"go.uber.org/zap"
 )
@@ -61,12 +62,21 @@ type MailConfig struct {
 
 func (app *Application) mount() http.Handler {
 	r := chi.NewRouter()
+	r.Use(cors.Handler(cors.Options{
+		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
+		AllowedOrigins: []string{"https://*", "http://*"},
+		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: false,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-
 	r.Use(middleware.Timeout(time.Second * 60))
 
 	r.Route("/api/v1", func(r chi.Router) {
@@ -78,6 +88,7 @@ func (app *Application) mount() http.Handler {
 		r.Route("/authentication", func(r chi.Router) {
 			r.Post("/user", app.createUserHandler)
 			r.Post("/token", app.createTokenHandler)
+			r.Put("/activate/{token}", app.activateUserHandler)
 		})
 
 		r.Route("/users", func(r chi.Router) {
@@ -90,7 +101,7 @@ func (app *Application) mount() http.Handler {
 
 			r.Route("/password", func(r chi.Router) {
 				r.Post("/reset-request", app.passwordResetRequestHandler)
-				r.Get("/request/verify" ,app.passwordRequestVerifyHandler)
+				r.Get("/request/verify", app.passwordRequestVerifyHandler)
 				r.Post("/reset", app.passwordResetHandler)
 			})
 
