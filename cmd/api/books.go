@@ -18,7 +18,7 @@ type createBookPayload struct {
 	Title         string   `json:"title" validate:"required,max=255"`
 	Author        string   `json:"author" validate:"required,max=255"`
 	ISBN          string   `json:"isbn" validate:"required,numeric,len=13"`
-	Price         int      `json:"price" validate:"required,gte=0,lte=100000"`
+	Price         float32  `json:"price" validate:"required,gte=0,lte=100000"`
 	Tags          []string `json:"tags" validate:"dive,max=30"`
 	Description   string   `json:"description" validate:"max=1000"`
 	CoverImageUrl string   `json:"cover_image_url" validate:"url"`
@@ -84,7 +84,7 @@ func (app *Application) createBookHandler(w http.ResponseWriter, r *http.Request
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		int			true	"Book ID"
-//	@Success		200	{object}	store.Book	"Book created"
+//	@Success		200	{object}	store.Book	"Get Book "
 //	@Failure		400	{object}	error
 //	@Failure		500	{object}	error
 //	@Security		ApiKeyAuth
@@ -102,7 +102,7 @@ type updateBookPayload struct {
 	Title         *string   `json:"title" validate:"omitempty,max=50"`
 	Author        *string   `json:"author" validate:"omitempty,max=50"`
 	ISBN          *string   `json:"isbn" validate:"omitempty,numeric,len=13"`
-	Price         *int      `json:"price" validate:"omitempty,gte=0,lte=100000"`
+	Price         *float32  `json:"price" validate:"omitempty,gte=0,lte=100000"`
 	Tags          *[]string `json:"tags" validate:"omitempty,dive,max=30"`
 	Description   *string   `json:"description" validate:"omitempty,max=1000"`
 	CoverImageUrl *string   `json:"cover_image_url" validate:"omitempty,url"`

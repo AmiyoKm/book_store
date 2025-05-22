@@ -16,7 +16,24 @@ import (
 type passwordResetRequestPayload struct {
 	Email string `json:"email" validate:"required,email"`
 }
+type TokenResponse struct {
+	Token string `json:"token"`
+}
 
+// passwordResetRequestHandler godoc
+//
+//	@Summary		Send Reset Password Request
+//	@Description	Send a Reset Password Request by sending a mail to the user
+//	@Tags			password
+//	@Accept			json
+//	@Produce		json
+//
+//	@Param			payload	body		passwordResetRequestPayload	true	"Password Reset Request Payload"
+//	@Success		201		{object}	TokenResponse				"Reset Password Request Response"
+//	@Failure		400		{object}	error
+//	@Failure		500		{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/password/reset-request [post]
 func (app *Application) passwordResetRequestHandler(w http.ResponseWriter, r *http.Request) {
 	var payload passwordResetRequestPayload
 
@@ -73,12 +90,30 @@ func (app *Application) passwordResetRequestHandler(w http.ResponseWriter, r *ht
 		return
 	}
 	app.logger.Infof("Sending email from: %s", app.cfg.mail.fromEmail)
-	if err := jsonResponse(w, http.StatusCreated, plainToken); err != nil {
+	if err := jsonResponse(w, http.StatusCreated, TokenResponse{plainToken}); err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}
 }
 
+type PasswordResetVerifyResponse struct {
+	Message string `json:"message"`
+	UserID  string `json:"user_id"`
+}
+
+// passwordRequestVerifyHandler godoc
+//
+//	@Summary		Verify the password reset request
+//	@Description	Verifies the password reset request sent by the email
+//	@Tags			password
+//	@Accept			json
+//	@Produce		json
+//	@Param			token	query		string						true	"Password reset token"
+//	@Success		200		{object}	PasswordResetVerifyResponse	"Reset Password Request Response"
+//	@Failure		400		{object}	error
+//	@Failure		500		{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/password/request/verify [get]
 func (app *Application) passwordRequestVerifyHandler(w http.ResponseWriter, r *http.Request) {
 	plainToken := r.URL.Query().Get("token")
 
@@ -109,9 +144,9 @@ func (app *Application) passwordRequestVerifyHandler(w http.ResponseWriter, r *h
 		app.badRequestError(w, r, fmt.Errorf("token expired"))
 		return
 	}
-	response := map[string]string{
-		"message": "Token is valid",
-		"user_id": fmt.Sprintf("%d", request.UserID),
+	response := PasswordResetVerifyResponse{
+		"Token is valid",
+		fmt.Sprintf("%d", request.UserID),
 	}
 
 	if err := jsonResponse(w, http.StatusOK, response); err != nil {
@@ -124,7 +159,23 @@ type passwordResetPayload struct {
 	Token       string `json:"token" validate:"required"`
 	NewPassword string `json:"new_password" validate:"required,min=5"`
 }
+type passwordResetResponse struct {
+	Message string `json:"message"`
+}
 
+// passwordRequestVerifyHandler godoc
+//
+//	@Summary		Reset the password
+//	@Description	Reset the password
+//	@Tags			password
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		passwordResetPayload	true	"Reset Password Payload"
+//	@Success		200		{object}	passwordResetResponse	"Reset Password Request Response"
+//	@Failure		400		{object}	error
+//	@Failure		500		{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/password/reset [post]
 func (app *Application) passwordResetHandler(w http.ResponseWriter, r *http.Request) {
 	var payload passwordResetPayload
 	if err := readJson(w, r, &payload); err != nil {
@@ -168,5 +219,5 @@ func (app *Application) passwordResetHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	app.logger.Infof("Password successfully reset for user ID: %d", payload.UserID)
-	jsonResponse(w, http.StatusOK, map[string]string{"message": "Password updated successfully"})
+	jsonResponse(w, http.StatusOK, passwordResetResponse{"Password updated successfully"})
 }

@@ -24,6 +24,60 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/orders/{id}": {
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update an order by Admin",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "order"
+                ],
+                "summary": "Update an order by Admin",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Order ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Order Payload by Admin",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.updateOrderAdminPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated Order",
+                        "schema": {
+                            "$ref": "#/definitions/store.Order"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
         "/authentication/token": {
             "post": {
                 "description": "Creates a token for a user",
@@ -188,7 +242,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Book created",
+                        "description": "Get Book ",
                         "schema": {
                             "$ref": "#/definitions/store.Book"
                         }
@@ -308,9 +362,332 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/orders": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create an order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "order"
+                ],
+                "summary": "Create an order",
+                "parameters": [
+                    {
+                        "description": "Create Order Payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.createOrderPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Creates an order",
+                        "schema": {
+                            "$ref": "#/definitions/store.Order"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/orders/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a order by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "order"
+                ],
+                "summary": "Get a order",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "order ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Get Order",
+                        "schema": {
+                            "$ref": "#/definitions/store.Order"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update an order by User",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "order"
+                ],
+                "summary": "Update an order by User",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Order ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Order Payload by User",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.updateOrderPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated Order",
+                        "schema": {
+                            "$ref": "#/definitions/store.Order"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/password/request/verify": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Verifies the password reset request sent by the email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "password"
+                ],
+                "summary": "Verify the password reset request",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Password reset token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Reset Password Request Response",
+                        "schema": {
+                            "$ref": "#/definitions/main.PasswordResetVerifyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/password/reset": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Reset the password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "password"
+                ],
+                "summary": "Reset the password",
+                "parameters": [
+                    {
+                        "description": "Reset Password Payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.passwordResetPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Reset Password Request Response",
+                        "schema": {
+                            "$ref": "#/definitions/main.passwordResetResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/password/reset-request": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Send a Reset Password Request by sending a mail to the user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "password"
+                ],
+                "summary": "Send Reset Password Request",
+                "parameters": [
+                    {
+                        "description": "Password Reset Request Payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.passwordResetRequestPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Reset Password Request Response",
+                        "schema": {
+                            "$ref": "#/definitions/main.TokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "main.OrderItemPayload": {
+            "type": "object",
+            "required": [
+                "book_id",
+                "price",
+                "quantity"
+            ],
+            "properties": {
+                "book_id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "price": {
+                    "type": "number"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
+        "main.PasswordResetVerifyResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.TokenResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "main.UserWithToken": {
             "type": "object",
             "properties": {
@@ -352,7 +729,7 @@ const docTemplate = `{
                     "minimum": 1
                 },
                 "price": {
-                    "type": "integer",
+                    "type": "number",
                     "maximum": 100000,
                     "minimum": 0
                 },
@@ -369,6 +746,38 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "maxLength": 255
+                }
+            }
+        },
+        "main.createOrderPayload": {
+            "type": "object",
+            "required": [
+                "items",
+                "payment_method",
+                "shipping_address",
+                "total_amount"
+            ],
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/main.OrderItemPayload"
+                    }
+                },
+                "payment_method": {
+                    "type": "string",
+                    "enum": [
+                        "cash_on_delivery",
+                        "Bkash",
+                        "credit_card"
+                    ]
+                },
+                "shipping_address": {
+                    "type": "string",
+                    "minLength": 5
+                },
+                "total_amount": {
+                    "type": "number"
                 }
             }
         },
@@ -418,6 +827,45 @@ const docTemplate = `{
                 }
             }
         },
+        "main.passwordResetPayload": {
+            "type": "object",
+            "required": [
+                "new_password",
+                "token",
+                "user_id"
+            ],
+            "properties": {
+                "new_password": {
+                    "type": "string",
+                    "minLength": 5
+                },
+                "token": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "main.passwordResetRequestPayload": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.passwordResetResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "main.updateBookPayload": {
             "type": "object",
             "properties": {
@@ -441,7 +889,7 @@ const docTemplate = `{
                     "minimum": 1
                 },
                 "price": {
-                    "type": "integer",
+                    "type": "number",
                     "maximum": 100000,
                     "minimum": 0
                 },
@@ -458,6 +906,45 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "maxLength": 50
+                }
+            }
+        },
+        "main.updateOrderAdminPayload": {
+            "type": "object",
+            "properties": {
+                "payment_method": {
+                    "type": "string",
+                    "enum": [
+                        "cash_on_delivery",
+                        "Bkash",
+                        "credit_card"
+                    ]
+                },
+                "shipping_address": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "pending",
+                        "processing",
+                        "shipped",
+                        "delivered",
+                        "cancelled",
+                        "returned",
+                        "failed",
+                        "refunded"
+                    ]
+                }
+            }
+        },
+        "main.updateOrderPayload": {
+            "type": "object",
+            "properties": {
+                "shipping_address": {
+                    "type": "string",
+                    "minLength": 1
                 }
             }
         },
@@ -486,7 +973,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "price": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "stock": {
                     "type": "integer"
@@ -504,6 +991,61 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "version": {
+                    "type": "integer"
+                }
+            }
+        },
+        "store.Order": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "order_items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/store.OrderItem"
+                    }
+                },
+                "payment_method": {
+                    "type": "string"
+                },
+                "placed_at": {
+                    "type": "string"
+                },
+                "shipping_address": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "store.OrderItem": {
+            "type": "object",
+            "properties": {
+                "book_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "order_id": {
+                    "type": "integer"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "quantity": {
                     "type": "integer"
                 }
             }
