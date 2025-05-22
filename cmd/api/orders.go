@@ -26,6 +26,19 @@ type OrderItemPayload struct {
 	Price    float64 `json:"price" validate:"required,gt=0"`
 }
 
+// createOrderHandler godoc
+//
+//	@Summary		Create an order
+//	@Description	Create an order
+//	@Tags			order
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		createOrderPayload	true	"Create Order Payload"
+//	@Success		201		{object}	store.Order			"Creates an order"
+//	@Failure		400		{object}	error				"Invalid request"
+//	@Failure		500		{object}	error				"Server error"
+//	@Security		ApiKeyAuth
+//	@Router			/orders [post]
 func (app *Application) createOrderHandler(w http.ResponseWriter, r *http.Request) {
 	user := getUserFromContext(r)
 
@@ -65,6 +78,20 @@ func (app *Application) createOrderHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 }
+
+// getOrderHandler godoc
+//
+//	@Summary		Get a order
+//	@Description	Get a order by its ID
+//	@Tags			order
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int			true	"order ID"
+//	@Success		200	{object}	store.Order	"Get Order"
+//	@Failure		400	{object}	error
+//	@Failure		500	{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/orders/{id} [get]
 func (app *Application) getOrderHandler(w http.ResponseWriter, r *http.Request) {
 	order := getOrderFromContext(r)
 
@@ -77,6 +104,19 @@ func (app *Application) getOrderHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 }
+
+// getAllOrderHandler godoc
+//
+//	@Summary		Get all orders
+//	@Description	Get all orders
+//	@Tags			order
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{array}		store.Order	"List of all orders"
+//	@Failure		400	{object}	error		"Invalid request"
+//	@Failure		500	{object}	error		"Server error"
+//	@Security		ApiKeyAuth
+//	@Router			/orders [get]
 
 func (app *Application) getAllOrdersHandler(w http.ResponseWriter, r *http.Request) {
 	user := getUserFromContext(r)
@@ -102,6 +142,20 @@ type updateOrderPayload struct {
 	ShippingAddress *string `json:"shipping_address" validate:"min=1"`
 }
 
+// updateOderHandler godoc
+//
+//	@Summary		Update an order by User
+//	@Description	Update an order by User
+//	@Tags			order
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int					true	"Order ID"
+//	@Param			payload	body		updateOrderPayload	true	"Update Order Payload by User"
+//	@Success		200		{object}	store.Order			"Updated Order"
+//	@Failure		400		{object}	error				"Invalid request"
+//	@Failure		500		{object}	error				"Server error"
+//	@Security		ApiKeyAuth
+//	@Router			/orders/{id} [patch]
 func (app *Application) updateOderHandler(w http.ResponseWriter, r *http.Request) {
 	user := getUserFromContext(r)
 	order := getOrderFromContext(r)
@@ -140,7 +194,7 @@ func (app *Application) updateOderHandler(w http.ResponseWriter, r *http.Request
 			return
 		}
 	}
-	if err := jsonResponse(w, http.StatusAccepted, order); err != nil {
+	if err := jsonResponse(w, http.StatusOK, order); err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}
@@ -153,6 +207,20 @@ type updateOrderAdminPayload struct {
 	Status          *string `json:"status" validate:"omitempty,oneof=pending processing shipped delivered cancelled returned failed refunded"`
 }
 
+// updateAdminOrderHandler godoc
+//
+//	@Summary		Update an order by Admin
+//	@Description	Update an order by Admin
+//	@Tags			order
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int						true	"Order ID"
+//	@Param			payload	body		updateOrderAdminPayload	true	"Update Order Payload by Admin"
+//	@Success		200		{object}	store.Order				"Updated Order"
+//	@Failure		400		{object}	error					"Invalid request"
+//	@Failure		500		{object}	error					"Server error"
+//	@Security		ApiKeyAuth
+//	@Router			/admin/orders/{id} [patch]
 func (app *Application) updateAdminOrderHandler(w http.ResponseWriter, r *http.Request) {
 	user := getUserFromContext(r)
 	order := getOrderFromContext(r)
@@ -197,7 +265,7 @@ func (app *Application) updateAdminOrderHandler(w http.ResponseWriter, r *http.R
 			return
 		}
 	}
-	if err := jsonResponse(w, http.StatusAccepted, order); err != nil {
+	if err := jsonResponse(w, http.StatusOK, order); err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}

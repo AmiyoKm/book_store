@@ -1,5 +1,32 @@
 basePath: /api/v1
 definitions:
+  main.OrderItemPayload:
+    properties:
+      book_id:
+        minimum: 1
+        type: integer
+      price:
+        type: number
+      quantity:
+        minimum: 1
+        type: integer
+    required:
+    - book_id
+    - price
+    - quantity
+    type: object
+  main.PasswordResetVerifyResponse:
+    properties:
+      message:
+        type: string
+      user_id:
+        type: string
+    type: object
+  main.TokenResponse:
+    properties:
+      token:
+        type: string
+    type: object
   main.UserWithToken:
     properties:
       token:
@@ -26,7 +53,7 @@ definitions:
       price:
         maximum: 100000
         minimum: 0
-        type: integer
+        type: number
       stock:
         minimum: 0
         type: integer
@@ -43,6 +70,29 @@ definitions:
     - price
     - stock
     - title
+    type: object
+  main.createOrderPayload:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/main.OrderItemPayload'
+        type: array
+      payment_method:
+        enum:
+        - cash_on_delivery
+        - Bkash
+        - credit_card
+        type: string
+      shipping_address:
+        minLength: 5
+        type: string
+      total_amount:
+        type: number
+    required:
+    - items
+    - payment_method
+    - shipping_address
+    - total_amount
     type: object
   main.createUserPayload:
     properties:
@@ -77,6 +127,32 @@ definitions:
     - email
     - password
     type: object
+  main.passwordResetPayload:
+    properties:
+      new_password:
+        minLength: 5
+        type: string
+      token:
+        type: string
+      user_id:
+        type: integer
+    required:
+    - new_password
+    - token
+    - user_id
+    type: object
+  main.passwordResetRequestPayload:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  main.passwordResetResponse:
+    properties:
+      message:
+        type: string
+    type: object
   main.updateBookPayload:
     properties:
       author:
@@ -96,7 +172,7 @@ definitions:
       price:
         maximum: 100000
         minimum: 0
-        type: integer
+        type: number
       stock:
         minimum: 0
         type: integer
@@ -106,6 +182,35 @@ definitions:
         type: array
       title:
         maxLength: 50
+        type: string
+    type: object
+  main.updateOrderAdminPayload:
+    properties:
+      payment_method:
+        enum:
+        - cash_on_delivery
+        - Bkash
+        - credit_card
+        type: string
+      shipping_address:
+        minLength: 1
+        type: string
+      status:
+        enum:
+        - pending
+        - processing
+        - shipped
+        - delivered
+        - cancelled
+        - returned
+        - failed
+        - refunded
+        type: string
+    type: object
+  main.updateOrderPayload:
+    properties:
+      shipping_address:
+        minLength: 1
         type: string
     type: object
   store.Book:
@@ -125,7 +230,7 @@ definitions:
       pages:
         type: integer
       price:
-        type: integer
+        type: number
       stock:
         type: integer
       tags:
@@ -137,6 +242,42 @@ definitions:
       updated_at:
         type: string
       version:
+        type: integer
+    type: object
+  store.Order:
+    properties:
+      id:
+        type: integer
+      order_items:
+        items:
+          $ref: '#/definitions/store.OrderItem'
+        type: array
+      payment_method:
+        type: string
+      placed_at:
+        type: string
+      shipping_address:
+        type: string
+      status:
+        type: string
+      total_amount:
+        type: number
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  store.OrderItem:
+    properties:
+      book_id:
+        type: integer
+      id:
+        type: integer
+      order_id:
+        type: integer
+      price:
+        type: number
+      quantity:
         type: integer
     type: object
   store.Role:
@@ -181,6 +322,41 @@ info:
   termsOfService: http://swagger.io/terms/
   title: BookBound API
 paths:
+  /admin/orders/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Update an order by Admin
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Order Payload by Admin
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.updateOrderAdminPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated Order
+          schema:
+            $ref: '#/definitions/store.Order'
+        "400":
+          description: Invalid request
+          schema: {}
+        "500":
+          description: Server error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Update an order by Admin
+      tags:
+      - order
   /authentication/token:
     post:
       consumes:
@@ -285,7 +461,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Book created
+          description: 'Get Book '
           schema:
             $ref: '#/definitions/store.Book'
         "400":
@@ -368,6 +544,188 @@ paths:
       summary: deletes a book
       tags:
       - book
+  /orders:
+    post:
+      consumes:
+      - application/json
+      description: Create an order
+      parameters:
+      - description: Create Order Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.createOrderPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Creates an order
+          schema:
+            $ref: '#/definitions/store.Order'
+        "400":
+          description: Invalid request
+          schema: {}
+        "500":
+          description: Server error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Create an order
+      tags:
+      - order
+  /orders/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a order by its ID
+      parameters:
+      - description: order ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Get Order
+          schema:
+            $ref: '#/definitions/store.Order'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get a order
+      tags:
+      - order
+    patch:
+      consumes:
+      - application/json
+      description: Update an order by User
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Order Payload by User
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.updateOrderPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated Order
+          schema:
+            $ref: '#/definitions/store.Order'
+        "400":
+          description: Invalid request
+          schema: {}
+        "500":
+          description: Server error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Update an order by User
+      tags:
+      - order
+  /password/request/verify:
+    get:
+      consumes:
+      - application/json
+      description: Verifies the password reset request sent by the email
+      parameters:
+      - description: Password reset token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Reset Password Request Response
+          schema:
+            $ref: '#/definitions/main.PasswordResetVerifyResponse'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Verify the password reset request
+      tags:
+      - password
+  /password/reset:
+    post:
+      consumes:
+      - application/json
+      description: Reset the password
+      parameters:
+      - description: Reset Password Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.passwordResetPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Reset Password Request Response
+          schema:
+            $ref: '#/definitions/main.passwordResetResponse'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Reset the password
+      tags:
+      - password
+  /password/reset-request:
+    post:
+      consumes:
+      - application/json
+      description: Send a Reset Password Request by sending a mail to the user
+      parameters:
+      - description: Password Reset Request Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.passwordResetRequestPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Reset Password Request Response
+          schema:
+            $ref: '#/definitions/main.TokenResponse'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Send Reset Password Request
+      tags:
+      - password
 securityDefinitions:
   ApiKeyAuth:
     in: header

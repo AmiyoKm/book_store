@@ -13,7 +13,7 @@ type Book struct {
 	Title         string    `json:"title"`
 	Author        string    `json:"author"`
 	ISBN          string    `json:"isbn"`
-	Price         int       `json:"price"`
+	Price         float32       `json:"price"`
 	Tags          []string  `json:"tags"`
 	Description   string    `json:"description"`
 	CoverImageUrl string    `json:"cover_image_url"`
