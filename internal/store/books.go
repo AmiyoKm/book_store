@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
+
 	"github.com/lib/pq"
 )
 
@@ -13,7 +15,7 @@ type Book struct {
 	Title         string    `json:"title"`
 	Author        string    `json:"author"`
 	ISBN          string    `json:"isbn"`
-	Price         float32       `json:"price"`
+	Price         float32   `json:"price"`
 	Tags          []string  `json:"tags"`
 	Description   string    `json:"description"`
 	CoverImageUrl string    `json:"cover_image_url"`
@@ -120,4 +122,95 @@ func (s *BookStore) Delete(ctx context.Context, bookID int) error {
 		}
 	}
 	return nil
+}
+
+type BooksBySearchPayload struct {
+	Query    string
+	Title    string
+	Author   string
+	Tags     []string
+	MinPrice float32
+	MaxPrice float32
+	InStock  *bool
+}
+
+func (s *BookStore) SearchByBooks(ctx context.Context, filters BooksBySearchPayload) ([]*Book, error) {
+	query := `
+	SELECT id, title, author, isbn, price, tags, description,
+		   cover_image_url, pages, stock, created_at, updated_at, version
+	FROM books
+	WHERE 1=1
+`
+	args := []any{}
+	argID := 1
+	if filters.Query != "" {
+		query += fmt.Sprintf(" AND (title ILIKE $%d OR author ILIKE $%d OR description ILIKE $%d)", argID, argID+1, argID+2)
+		search := "%" + filters.Query + "%"
+		args = append(args, search, search, search)
+		argID += 3
+	}
+	if filters.Title != "" {
+		query += fmt.Sprintf(" AND title ILIKE $%d", argID)
+		args = append(args, "%"+filters.Title+"%")
+		argID++
+	}
+	if filters.Author != "" {
+		query += fmt.Sprintf(" AND author ILIKE $%d", argID)
+		args = append(args, "%"+filters.Author+"%")
+		argID++
+	}
+	if len(filters.Tags) > 0 {
+		query += fmt.Sprintf(" AND tags && $%d", argID)
+		args = append(args, pq.Array(filters.Tags))
+		argID++
+	}
+	if filters.MinPrice > 0 {
+		query += fmt.Sprintf(" AND price >=$%d", argID)
+		args = append(args, filters.MinPrice)
+		argID++
+	}
+	if filters.MaxPrice > 0 {
+		query += fmt.Sprintf(" AND price <=$%d", argID)
+		args = append(args, filters.MaxPrice)
+		argID++
+	}
+	if filters.InStock != nil {
+		if *filters.InStock {
+			query += " AND stock > 0"
+		}
+	}
+	query += " ORDER BY title ASC"
+	rows, err := s.db.QueryContext(ctx, query, args...)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var books []*Book
+	for rows.Next() {
+		b := &Book{}
+
+		err := rows.Scan(
+			&b.ID,
+			&b.Title,
+			&b.Author,
+			&b.ISBN,
+			&b.Price,
+			pq.Array(&b.Tags),
+			&b.Description,
+			&b.CoverImageUrl,
+			&b.Pages,
+			&b.Stock,
+			&b.CreatedAt,
+			&b.UpdatedAt,
+			&b.Version,
+		)
+		if err != nil {
+			return nil, err
+		}
+		books = append(books, b)
+	}
+	return books, nil
+
 }

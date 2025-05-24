@@ -221,6 +221,63 @@ func (app *Application) deleteBookHandler(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// getBooksBySearchHandler godoc
+//
+//	@Summary		Search books
+//	@Description	Search for books using a general query or specific filters such as title, author, tags, price range, and stock status.
+//	@Tags			book
+//	@Accept			json
+//	@Produce		json
+//	@Param			query		query		string		false	"Free-text search query"
+//	@Param			title		query		string		false	"Filter by book title"
+//	@Param			author		query		string		false	"Filter by author name"
+//	@Param			tag			query		[]string	false	"Filter by tags"
+//	@Param			min_price	query		number		false	"Minimum price filter"
+//	@Param			max_price	query		number		false	"Maximum price filter"
+//	@Param			in_stock	query		boolean		false	"Filter by stock status (true for in-stock, false for out-of-stock)"
+//	@Success		200			{array}		store.Book
+//	@Failure		500			{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/books/search [get]
+func (app *Application) getBooksBySearchHandler(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+
+	filters := store.BooksBySearchPayload{
+		Query:  q.Get("query"),
+		Title:  q.Get("title"),
+		Author: q.Get("author"),
+		Tags:   q["tag"],
+	}
+
+	if min := q.Get("min_price"); min != "" {
+		if v, err := strconv.ParseFloat(min, 32); err != nil {
+			filters.MinPrice = float32(v)
+		}
+	}
+
+	if max := q.Get("max_price"); max != "" {
+		if v, err := strconv.ParseFloat(max, 64); err != nil {
+			filters.MaxPrice = float32(v)
+		}
+	}
+	if stock := q.Get("in_stock"); stock != "" {
+		inStock := stock == "true"
+		filters.InStock = &inStock
+	}
+	ctx := r.Context()
+	books, err := app.store.Books.SearchByBooks(ctx, filters)
+
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	if err := jsonResponse(w, http.StatusOK, books); err != nil {
+		app.internalServerError(w, r, err)
+	}
+
+}
+
 func (app *Application) bookContextMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		paramID := chi.URLParam(r, "bookID")
