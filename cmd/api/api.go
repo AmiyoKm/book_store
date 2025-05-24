@@ -118,7 +118,19 @@ func (app *Application) mount() http.Handler {
 
 				r.Patch("/", app.checkBookManipulationAuthority("moderator", app.updateBookHandler))
 				r.Delete("/", app.checkBookManipulationAuthority("moderator", app.deleteBookHandler))
+
+				// r.Route("/reviews", func(r chi.Router) {
+				// 	r.Get("/", app.getAllReviewsHandler)
+				// 	r.Post("/", app.createReviewHandler)
+
+				// 	r.Route("/{reviewID}", func(r chi.Router) {
+				// 		r.Patch("/", app.updateReviewHandler)
+				// 		r.Delete("/", app.deleteReviewHandler)
+				// 	})
+				// })
 			})
+
+			r.Get("/search", app.getBooksBySearchHandler)
 		})
 
 		r.Route("/orders", func(r chi.Router) {

@@ -20,6 +20,7 @@ type Storage struct {
 		GetByID(context.Context, int) (*Book, error)
 		Update(context.Context, *Book) error
 		Delete(context.Context, int) error
+		SearchByBooks(ctx context.Context, filters BooksBySearchPayload) ([]*Book, error)
 	}
 	Users interface {
 		Create(context.Context, *User) error
