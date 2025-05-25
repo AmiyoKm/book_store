@@ -45,14 +45,22 @@ type Storage struct {
 		Get(ctx context.Context, userID int) ([]Order, error)
 		Update(context.Context, *Order) error
 	}
+	Reviews interface {
+		Create(context.Context, *Review) error
+		GetByBookID(context.Context, int) ([]*Review, error)
+		GetByID(ctx context.Context, reviewID int) (*Review, error)
+		Delete(context.Context, int, int) error
+		Update(context.Context, *Review) error
+	}
 }
 
 func NewStorage(db *sql.DB) Storage {
 	return Storage{
-		Books:  &BookStore{db},
-		Users:  &UserStore{db},
-		Roles:  &RoleStore{db},
-		Orders: &OrderStore{db},
+		Books:   &BookStore{db},
+		Users:   &UserStore{db},
+		Roles:   &RoleStore{db},
+		Orders:  &OrderStore{db},
+		Reviews: &ReviewStore{db},
 	}
 }
 
