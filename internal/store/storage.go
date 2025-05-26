@@ -52,6 +52,15 @@ type Storage struct {
 		Delete(context.Context, int, int) error
 		Update(context.Context, *Review) error
 	}
+	Carts interface {
+		GetOrCreateCart(ctx context.Context, userID int) (*Cart, error)
+		GetCartItem(ctx context.Context, cartID int) (*CartItem, error)
+		InsertOrUpdateCartItem(ctx context.Context, cartID, bookID, quantity int) error
+		GetCartItemsWithBooks(ctx context.Context, cartID int) ([]CartItemWithBook, error)
+		DeleteCartItem(context.Context, int, int) error
+		DeleteCart(context.Context, int) error
+		UpdateQuantity(ctx context.Context, quantity int, itemID, userID int) error
+	}
 }
 
 func NewStorage(db *sql.DB) Storage {
@@ -61,6 +70,7 @@ func NewStorage(db *sql.DB) Storage {
 		Roles:   &RoleStore{db},
 		Orders:  &OrderStore{db},
 		Reviews: &ReviewStore{db},
+		Carts:   &CartStore{db},
 	}
 }
 
