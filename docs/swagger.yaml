@@ -1,5 +1,14 @@
 basePath: /api/v1
 definitions:
+  main.CartResponse:
+    properties:
+      cart_id:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/store.CartItemWithBook'
+        type: array
+    type: object
   main.CreateReviewPayload:
     properties:
       content:
@@ -46,6 +55,18 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/store.User'
+    type: object
+  main.addToCartPayload:
+    properties:
+      book_id:
+        type: integer
+      quantity:
+        maximum: 10
+        minimum: 1
+        type: integer
+    required:
+    - book_id
+    - quantity
     type: object
   main.createBookPayload:
     properties:
@@ -197,6 +218,15 @@ definitions:
         maxLength: 50
         type: string
     type: object
+  main.updateItemPayload:
+    properties:
+      quantity:
+        maximum: 10
+        minimum: 1
+        type: integer
+    required:
+    - quantity
+    type: object
   main.updateOrderAdminPayload:
     properties:
       payment_method:
@@ -266,6 +296,42 @@ definitions:
         type: string
       version:
         type: integer
+    type: object
+  store.CartItem:
+    properties:
+      book_id:
+        type: integer
+      cart_id:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      quantity:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  store.CartItemWithBook:
+    properties:
+      author:
+        type: string
+      book_id:
+        type: integer
+      cart_id:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      price:
+        type: number
+      quantity:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
     type: object
   store.Order:
     properties:
@@ -773,6 +839,139 @@ paths:
       summary: deletes a book
       tags:
       - book
+  /carts:
+    delete:
+      description: Delete all items from the authenticated user's cart
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Cart deleted successfully
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Delete entire cart
+      tags:
+      - cart
+    get:
+      consumes:
+      - application/json
+      description: Get Cart Items
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.CartResponse'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get Cart Items
+      tags:
+      - cart
+    post:
+      consumes:
+      - application/json
+      description: Add book to cart
+      parameters:
+      - description: Add to Cart Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.addToCartPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Add book to cart
+      tags:
+      - cart
+  /carts/items/{itemID}:
+    delete:
+      description: Delete a specific item from the user's cart by item ID
+      parameters:
+      - description: Cart Item ID
+        in: path
+        name: itemID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Item deleted successfully
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Delete item from cart
+      tags:
+      - cart
+    patch:
+      description: Update Cart Item Quantity
+      parameters:
+      - description: Item ID
+        in: path
+        name: itemID
+        required: true
+        type: integer
+      - description: Quantity Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.updateItemPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: CartItem Updated successfully
+          schema:
+            $ref: '#/definitions/store.CartItem'
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Update Cart Item Quantity
+      tags:
+      - cart
   /orders:
     post:
       consumes:
