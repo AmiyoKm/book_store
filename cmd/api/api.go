@@ -134,18 +134,25 @@ func (app *Application) mount() http.Handler {
 
 			r.Get("/search", app.getBooksBySearchHandler)
 		})
-
-		r.Route("/carts",func(r chi.Router) {
+		r.Route("/wishlist", func(r chi.Router) {
 			r.Use(app.AuthTokenMiddleware)
 
-			r.Post("/" ,app.addToCartHandler)
-			r.Get("/" ,app.getCartHandler)
-			r.Delete("/" , app.deleteCartHandler)
-			r.Route("/items/{itemID}",func(r chi.Router) {
+			// r.Get("/", app.getWishlistHandler)
+			// r.Post("/", app.addToWishlistHandler)
+			// r.Delete("/{bookID}", app.removeFromWishlistHandler)
+		})
+
+		r.Route("/carts", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
+
+			r.Post("/", app.addToCartHandler)
+			r.Get("/", app.getCartHandler)
+			r.Delete("/", app.deleteCartHandler)
+			r.Route("/items/{itemID}", func(r chi.Router) {
 				r.Use(app.itemContextMiddleware)
 
-				r.Patch("/",app.updateItemHandler)
-				r.Delete("/",app.deleteItemHandler)
+				r.Patch("/", app.updateItemHandler)
+				r.Delete("/", app.deleteItemHandler)
 			})
 
 		})
