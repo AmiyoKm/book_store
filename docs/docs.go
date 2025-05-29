@@ -1139,6 +1139,135 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/wishlist": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get Book Wishlist",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wishlist"
+                ],
+                "summary": "Get Book Wishlist",
+                "responses": {
+                    "200": {
+                        "description": "Book List",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/store.Book"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Add Book to Wishlist",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wishlist"
+                ],
+                "summary": "Add Book to Wishlist",
+                "parameters": [
+                    {
+                        "description": "Book ID",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.addToWishlistPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Create Wishlist",
+                        "schema": {
+                            "$ref": "#/definitions/store.Wishlist"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/wishlist/{bookID}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete Book From Wishlist",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wishlist"
+                ],
+                "summary": "Delete Book From Wishlist",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "BOOK ID",
+                        "name": "bookID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "DELETED RESPONSE",
+                        "schema": {
+                            "$ref": "#/definitions/main.removeWishlistResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1239,6 +1368,17 @@ const docTemplate = `{
                     "type": "integer",
                     "maximum": 10,
                     "minimum": 1
+                }
+            }
+        },
+        "main.addToWishlistPayload": {
+            "type": "object",
+            "required": [
+                "book_id"
+            ],
+            "properties": {
+                "book_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -1404,6 +1544,17 @@ const docTemplate = `{
         "main.passwordResetResponse": {
             "type": "object",
             "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.removeWishlistResponse": {
+            "type": "object",
+            "properties": {
+                "book_id": {
+                    "type": "integer"
+                },
                 "message": {
                     "type": "string"
                 }
@@ -1744,6 +1895,26 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "store.Wishlist": {
+            "type": "object",
+            "properties": {
+                "bookID": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "integer"
                 }
             }
         }

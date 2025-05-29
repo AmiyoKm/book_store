@@ -61,16 +61,22 @@ type Storage struct {
 		DeleteCart(context.Context, int) error
 		UpdateQuantity(ctx context.Context, quantity int, itemID, userID int) error
 	}
+	WishLists interface {
+		Create(ctx context.Context, wishlist *Wishlist) error
+		GetWishlistBooks(context.Context, int) ([]*Book, error)
+		Delete(ctx context.Context, userID int, BookID int) error
+	}
 }
 
 func NewStorage(db *sql.DB) Storage {
 	return Storage{
-		Books:   &BookStore{db},
-		Users:   &UserStore{db},
-		Roles:   &RoleStore{db},
-		Orders:  &OrderStore{db},
-		Reviews: &ReviewStore{db},
-		Carts:   &CartStore{db},
+		Books:     &BookStore{db},
+		Users:     &UserStore{db},
+		Roles:     &RoleStore{db},
+		Orders:    &OrderStore{db},
+		Reviews:   &ReviewStore{db},
+		Carts:     &CartStore{db},
+		WishLists: &WishlistStore{db},
 	}
 }
 
