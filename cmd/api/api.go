@@ -137,9 +137,9 @@ func (app *Application) mount() http.Handler {
 		r.Route("/wishlist", func(r chi.Router) {
 			r.Use(app.AuthTokenMiddleware)
 
-			// r.Get("/", app.getWishlistHandler)
-			// r.Post("/", app.addToWishlistHandler)
-			// r.Delete("/{bookID}", app.removeFromWishlistHandler)
+			r.Get("/", app.getWishlistHandler)
+			r.Post("/", app.addToWishlistHandler)
+			r.Delete("/{bookID}", app.removeFromWishlistHandler)
 		})
 
 		r.Route("/carts", func(r chi.Router) {
