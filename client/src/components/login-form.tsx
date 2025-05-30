@@ -24,8 +24,9 @@ export function LoginForm({
 	const mutation = useMutation({
 		mutationFn: login,
 		onSuccess: (data) => {
-			localStorage.setItem("token", data.data);
-			navigate("/home");
+			console.log(data.data.data);
+			localStorage.setItem("token", data.data.data);
+			navigate("/books");
 		},
 	});
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {

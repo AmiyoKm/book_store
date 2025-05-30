@@ -19,7 +19,7 @@ api.interceptors.response.use(
     response => response,
     error => {
         if (error.response && error.response.status === 401) {
-            // Optionally remove token and redirect to login
+            //Optionally remove token and redirect to login
             // localStorage.removeItem("token");
             // window.location.href = "/sign-in";
         }
