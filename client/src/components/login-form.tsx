@@ -24,8 +24,7 @@ export function LoginForm({
 	const mutation = useMutation({
 		mutationFn: login,
 		onSuccess: (data) => {
-			console.log(data.data.data);
-			localStorage.setItem("token", data.data.data);
+			localStorage.setItem("token", data.data);
 			navigate("/books");
 		},
 	});

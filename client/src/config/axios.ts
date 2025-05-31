@@ -16,7 +16,7 @@ api.interceptors.request.use(
     error => Promise.reject(error)
 )
 api.interceptors.response.use(
-    response => response,
+    response => response.data,
     error => {
         if (error.response && error.response.status === 401) {
             //Optionally remove token and redirect to login

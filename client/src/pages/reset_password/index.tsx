@@ -45,7 +45,7 @@ const ResetPassword = () => {
 		const payload: ChangePasswordPayload = {
 			token: token!,
 			new_password: password,
-			user_id: Number(query.data?.data.data.user_id),
+			user_id: Number(query.data?.data.user_id),
 		};
 		mutation.mutate(payload);
 	};

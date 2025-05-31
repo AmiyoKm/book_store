@@ -12,3 +12,10 @@ export type ChangePasswordPayload = {
     token: string,
     new_password: string
 }
+
+export type User = {
+    id: number
+    username: string
+    email: string
+    roleId: number
+}

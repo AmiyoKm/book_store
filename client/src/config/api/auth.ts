@@ -23,3 +23,7 @@ export function passwordChange(data: ChangePasswordPayload) {
 export function passwordResetRequest(data: { email: string }) {
     return api.post("/password/reset-request",data)
 }
+
+export function getUser(){
+    return api.get("/users/me")
+}

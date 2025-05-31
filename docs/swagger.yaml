@@ -280,6 +280,14 @@ definitions:
         minimum: 1
         type: integer
     type: object
+  main.updateUserPayload:
+    properties:
+      username:
+        minLength: 2
+        type: string
+    required:
+    - username
+    type: object
   store.Book:
     properties:
       author:
@@ -1181,6 +1189,91 @@ paths:
       summary: Send Reset Password Request
       tags:
       - password
+  /users/activate/{token}:
+    get:
+      consumes:
+      - application/json
+      description: Activates a user account using a provided token.
+      parameters:
+      - description: Activation Token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User account activated
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Activate user account
+      tags:
+      - user
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves details of the authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User details
+          schema:
+            $ref: '#/definitions/store.User'
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get current user details
+      tags:
+      - user
+    patch:
+      consumes:
+      - application/json
+      description: Updates the authenticated user's details.
+      parameters:
+      - description: User update payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/main.updateUserPayload'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: User updated
+          schema:
+            $ref: '#/definitions/store.User'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Update user details
+      tags:
+      - user
   /wishlist:
     get:
       consumes:
