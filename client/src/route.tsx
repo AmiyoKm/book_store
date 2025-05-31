@@ -7,8 +7,8 @@ import ResetPassword from "./pages/reset_password";
 import ForgotPasswordPage from "./pages/forgot_password";
 import RootLayout from "./components/RootOutlet";
 import BooksPage from "./pages/books";
+import BookDetailPage from "./pages/books/BookDetail";
 const CategoriesPage = () => <div>Books Categories Page</div>;
-const BookDetailPage = () => <div>Book Detail Page</div>;
 const CartPage = () => <div>Shopping Cart Page</div>;
 const WishlistPage = () => <div>Wishlist Page</div>;
 const OrdersPage = () => <div>Orders List Page</div>;
@@ -49,7 +49,7 @@ export const router = createBrowserRouter([
 			},
 			{
 				path: "/books/:bookId",
-				element: <BookDetailPage />,
+				element: <BookDetailPage/>,
 			},
 			{
 				path : "/categories",

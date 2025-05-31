@@ -16,3 +16,13 @@ export type Book = {
 export type ApiResponse<T> = {
     data: T;
 };
+
+export type Review = {
+    ID: number;
+    UserID: number;
+    BookID: number;
+    Content: string;
+    Rating: number; 
+    CreatedAt: string;
+    UpdatedAt: string;
+}
