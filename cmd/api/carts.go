@@ -169,7 +169,7 @@ func (app *Application) deleteCartHandler(w http.ResponseWriter, r *http.Request
 }
 
 type updateItemPayload struct {
-	Quantity int `json:"quantity" validate:"required,min=1,max=10"`
+	Quantity int `json:"quantity" validate:"required,min=1"`
 }
 
 // updateItemHandler godoc
@@ -220,13 +220,14 @@ func (app *Application) updateItemHandler(w http.ResponseWriter, r *http.Request
 func (app *Application) itemContextMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		idParam := chi.URLParam(r, "itemID")
-		itemID, err := strconv.ParseInt(idParam, 10, 64)
+		itemID, err := strconv.Atoi(idParam)
 		if err != nil {
 			app.notFoundError(w, r, err)
 			return
 		}
 		ctx := r.Context()
-		item, err := app.store.Carts.GetCartItem(ctx, int(itemID))
+		item, err := app.store.Carts.GetCartItem(ctx, itemID)
+		app.logger.Infoln("ITEM", item)
 
 		if err != nil {
 			switch err {

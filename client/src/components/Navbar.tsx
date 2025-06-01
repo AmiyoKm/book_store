@@ -10,11 +10,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ModeToggle } from "@/components/mode-toggle";
+import { useNavigate } from "react-router";
 
 const Navbar = () => {
+	const navigate = useNavigate()
 	return (
 		<nav className="border-b border-border px-4 py-2 flex items-center justify-between bg-background text-foreground shadow-sm">
-			<div className="flex items-center">
+			<div
+				className="flex items-center"
+				onClick={() => {
+					navigate("/books");
+				}}
+			>
 				<BookOpen className="mr-2 h-6 w-6 text-primary" />{" "}
 				<span className="text-xl font-bold text-primary">BookBond</span>{" "}
 			</div>
@@ -22,21 +29,36 @@ const Navbar = () => {
 				<Button
 					variant="ghost"
 					className="flex items-center text-foreground hover:text-primary"
+					onClick={() => {
+						navigate("/books");
+					}}
 				>
 					<Home className="mr-2 h-4 w-4" /> Home
 				</Button>
 				<Button
 					variant="ghost"
 					className="flex items-center text-foreground hover:text-primary"
+					onClick={() => {
+						navigate("/wishlist");
+					}}
 				>
 					<Heart className="mr-2 h-4 w-4" /> Wishlist
 				</Button>
-				<Button variant="ghost" className="text-foreground hover:text-primary">
+				<Button
+					variant="ghost"
+					className="text-foreground hover:text-primary"
+					onClick={() => {
+						navigate("/categories");
+					}}
+				>
 					Categories
 				</Button>
 				<Button
 					variant="ghost"
 					className="flex items-center text-foreground hover:text-primary"
+					onClick={() => {
+						navigate("/orders");
+					}}
 				>
 					<ListOrdered className="mr-2 h-4 w-4" /> Orders
 				</Button>
@@ -46,6 +68,9 @@ const Navbar = () => {
 					variant="ghost"
 					size="icon"
 					className="text-foreground hover:text-primary"
+					onClick={() => {
+						navigate("/cart");
+					}}
 				>
 					<ShoppingCart className="h-5 w-5" />
 					<span className="sr-only">Shopping Cart</span>{" "}
@@ -54,6 +79,9 @@ const Navbar = () => {
 					variant="ghost"
 					size="icon"
 					className="text-foreground hover:text-primary"
+					onClick={() => {
+						navigate("/profile");
+					}}
 				>
 					<User className="h-5 w-5" />
 					<span className="sr-only">Profile</span>

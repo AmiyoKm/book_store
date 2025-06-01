@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/AmiyoKm/book_store/internal/store"
@@ -10,15 +11,17 @@ import (
 )
 
 type Review struct {
-    ID        int       `json:"id"`
-    UserID    int       `json:"user_id"`
-    BookID    int       `json:"book_id"`
-    Content   string    `json:"content"`
-    Rating    int       `json:"rating"`
-    CreatedAt time.Time `json:"created_at"`
-    UpdatedAt time.Time `json:"updated_at"`
+	ID        int       `json:"id"`
+	UserID    int       `json:"user_id"`
+	BookID    int       `json:"book_id"`
+	Content   string    `json:"content"`
+	Rating    int       `json:"rating"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
+
 // activateUserHandler godoc
+//
 //	@Summary		Activate user account
 //	@Description	Activates a user account using a provided token.
 //	@Tags			user
@@ -47,7 +50,9 @@ func (app *Application) activateUserHandler(w http.ResponseWriter, r *http.Reque
 		app.internalServerError(w, r, err)
 	}
 }
+
 // getUserHandler godoc
+//
 //	@Summary		Get current user details
 //	@Description	Retrieves details of the authenticated user.
 //	@Tags			user
@@ -74,7 +79,9 @@ func (app *Application) getUserHandler(w http.ResponseWriter, r *http.Request) {
 type updateUserPayload struct {
 	UserName *string `json:"username" validate:"required,min=2"`
 }
+
 // updateUserHandler godoc
+//
 //	@Summary		Update user details
 //	@Description	Updates the authenticated user's details.
 //	@Tags			user
@@ -124,6 +131,43 @@ func (app *Application) updateUserHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+}
+
+// getUserByIDHandler godoc
+//
+//	@Summary		Get User by ID
+//	@Description	Get User by ID
+//	@Tags			user
+//	@Accept			json
+//	@Produce		json
+//	@Param			userID	path		int			true	"User ID"
+//	@Success		200		{object}	store.User	"User"
+//	@Failure		400		{object}	error
+//	@Failure		500		{object}	error
+//	@Security		ApiAuthKey
+//	@Router			/users/{userID} [get]
+func (app *Application) getUserByIDHandler(w http.ResponseWriter, r *http.Request) {
+	isParam := chi.URLParam(r, "userID")
+	userID, err := strconv.Atoi(isParam)
+	if err != nil {
+		app.badRequestError(w, r, err)
+		return
+	}
+	user, err := app.store.Users.GetByID(r.Context(), userID)
+	if err != nil {
+		switch err {
+		case store.ErrorNotFound:
+			app.notFoundError(w, r, err)
+			return
+		default:
+			app.internalServerError(w, r, err)
+			return
+		}
+	}
+	if err := jsonResponse(w, http.StatusOK, user); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
 }
 func getUserFromContext(r *http.Request) *store.User {
 	user, _ := r.Context().Value(userCtx).(*store.User)

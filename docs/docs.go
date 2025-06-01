@@ -1269,6 +1269,51 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/{userID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiAuthKey": []
+                    }
+                ],
+                "description": "Get User by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get User by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User",
+                        "schema": {
+                            "$ref": "#/definitions/store.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
         "/wishlist": {
             "get": {
                 "security": [
@@ -1740,7 +1785,6 @@ const docTemplate = `{
             "properties": {
                 "quantity": {
                     "type": "integer",
-                    "maximum": 10,
                     "minimum": 1
                 }
             }
@@ -1892,6 +1936,9 @@ const docTemplate = `{
                 "cart_id": {
                     "type": "integer"
                 },
+                "cover_image_url": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -1902,6 +1949,9 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "quantity": {
+                    "type": "integer"
+                },
+                "stock": {
                     "type": "integer"
                 },
                 "title": {
