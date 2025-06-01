@@ -23,15 +23,17 @@ type CartItem struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 type CartItemWithBook struct {
-	ID        int       `json:"id"`
-	CartID    int       `json:"cart_id"`
-	BookID    int       `json:"book_id"`
-	Quantity  int       `json:"quantity"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Title     string    `json:"title"`
-	Author    string    `json:"author"`
-	Price     float64   `json:"price"`
+	ID            int       `json:"id"`
+	CartID        int       `json:"cart_id"`
+	BookID        int       `json:"book_id"`
+	Quantity      int       `json:"quantity"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+	Title         string    `json:"title"`
+	Author        string    `json:"author"`
+	Price         float64   `json:"price"`
+	CoverImageUrl string    `json:"cover_image_url"`
+	Stock         int       `json:"stock"`
 }
 type CartStore struct {
 	db *sql.DB
@@ -71,7 +73,7 @@ func (s *CartStore) GetOrCreateCart(ctx context.Context, userID int) (*Cart, err
 
 func (s *CartStore) GetCartItem(ctx context.Context, cartID int) (*CartItem, error) {
 	query := `SELECT id, cart_id, book_id, quantity, created_at, updated_at
-	          FROM cart_items WHERE cart_id = $1`
+	          FROM cart_items WHERE id = $1`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeDuration)
 	defer cancel()
@@ -113,10 +115,10 @@ func (s *CartStore) GetCartItemsWithBooks(ctx context.Context, cartID int) ([]Ca
 	query := `
 	SELECT
 	ci.id, ci.cart_id, ci.book_id, ci.quantity, ci.created_at, ci.updated_at,
-	b.title, b.author, b.price
+	b.title, b.author, b.price , b.cover_image_url , b.stock
 	FROM cart_items ci
 	JOIN books b ON ci.book_id = b.id
-	WHERE ci.cart_id = $1
+	WHERE ci.cart_id = $1 ORDER BY ci.created_at ASC
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeDuration)
@@ -141,6 +143,8 @@ func (s *CartStore) GetCartItemsWithBooks(ctx context.Context, cartID int) ([]Ca
 			&item.Title,
 			&item.Author,
 			&item.Price,
+			&item.CoverImageUrl,
+			&item.Stock,
 		)
 		if err != nil {
 			return nil, err

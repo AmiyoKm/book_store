@@ -27,19 +27,24 @@ import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea"; // Import Textarea for review input
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { getUser } from "@/config/api/auth";
-import type { User } from "@/types/auth";
+import { getUserByID } from "@/config/api/auth";
+import { addToCart } from "@/config/api/cart";
 
 const BookDetailPage = () => {
 	const { bookId } = useParams<{ bookId: string }>();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient(); // Get query client for invalidation
-	const { data: UserData, isError: isUserError } = useQuery<ApiResponse<User>>({
-		queryKey: ["user"],
-		queryFn: getUser,
-	});
 	const [reviewText, setReviewText] = useState("");
 	const [reviewRating, setReviewRating] = useState(0); // 0-5 stars
+	const { mutate: mutateCart } = useMutation({
+		mutationFn: addToCart,
+		onSuccess: () => {
+			toast.success("Book added to cart");
+		},
+		onError: () => {
+			toast.error("Something went wrong , Please try again later");
+		},
+	});
 	const {
 		data: bookResponse,
 		isLoading: isLoadingBook,
@@ -80,14 +85,6 @@ const BookDetailPage = () => {
 			});
 		},
 	});
-	if (isUserError) {
-		toast.error("User not found");
-		return (
-			<div className="container mx-auto px-4 py-8 text-center text-lg text-red-500">
-				User not found . Please Log in .
-			</div>
-		);
-	}
 	const book = bookResponse?.data;
 	const relatedBookQueriesConfig = (book?.tags || []).map((tag) => ({
 		queryKey: ["relatedBooksByTag", tag],
@@ -96,11 +93,27 @@ const BookDetailPage = () => {
 		staleTime: 5 * 60 * 1000,
 		cacheTime: 10 * 60 * 1000,
 	}));
-
 	const relatedQueries = useQueries({
 		queries: relatedBookQueriesConfig,
 	});
+	const reviews = reviewsResponse?.data || [];
+	const uniqueUserIds = Array.from(new Set(reviews.map((r) => r.UserID)));
 
+	const userQueries = useQueries({
+		queries: uniqueUserIds.map((id) => ({
+			queryKey: ["user", id],
+			queryFn: () => getUserByID(id),
+			enabled: !!id,
+			staleTime: 5 * 60 * 1000,
+		})),
+	});
+	const userMap = new Map<number, string>();
+	userQueries.forEach((query, index) => {
+		const id = uniqueUserIds[index];
+		if (query.isSuccess) {
+			userMap.set(id, query.data.data.username);
+		}
+	});
 	if (!bookId) {
 		return (
 			<div className="container mx-auto px-4 py-8 text-center text-lg text-red-500">
@@ -125,8 +138,6 @@ const BookDetailPage = () => {
 			</div>
 		);
 	}
-
-	const reviews = reviewsResponse?.data || [];
 
 	// Calculate average rating
 	const averageRating =
@@ -276,7 +287,12 @@ const BookDetailPage = () => {
 							<span className="text-4xl font-extrabold text-primary">
 								${book.price.toFixed(2)}
 							</span>
-							<Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-6 py-3">
+							<Button
+								className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-6 py-3"
+								onClick={() => {
+									mutateCart({ book_id: book.id, quantity: 1 });
+								}}
+							>
 								Add to Cart
 							</Button>
 						</CardFooter>
@@ -378,7 +394,7 @@ const BookDetailPage = () => {
 											{review.Content}
 										</p>
 										<p className="text-xs text-muted-foreground mt-1">
-											— {" " + UserData?.data.username || "Anonymous"}
+											— {userMap.get(review.UserID) || "Anonymous"}
 										</p>
 									</div>
 								))

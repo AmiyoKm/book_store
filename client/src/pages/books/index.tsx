@@ -10,10 +10,12 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Search } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { fetchBooks } from "@/config/api/books";
 import type { ApiResponse, Book } from "@/types/books";
 import { useNavigate } from "react-router";
+import { addToCart } from "@/config/api/cart";
+import { toast } from "sonner";
 
 const BooksPage = () => {
 	const navigate = useNavigate();
@@ -26,10 +28,17 @@ const BooksPage = () => {
 		queryKey: ["book"],
 		queryFn: fetchBooks,
 	});
-
 	const [searchTerm, setSearchTerm] = useState("");
 	const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
-
+	const { mutate: mutateCart } = useMutation({
+		mutationFn: addToCart,
+		onSuccess: () => {
+			toast.success("Book added to cart");
+		},
+		onError: () => {
+			toast.error("Something went wrong , Please try again later");
+		},
+	});
 	useEffect(() => {
 		if (booksData?.data) {
 			const lowercasedSearchTerm = searchTerm.toLowerCase();
@@ -122,7 +131,16 @@ const BooksPage = () => {
 										${book.price.toFixed(2)}
 									</span>
 									<div className="flex items-center space-x-2">
-										<Button className="bg-primary hover:bg-primary/90 text-primary-foreground transition-colors duration-200">
+										<Button
+											className="bg-primary hover:bg-primary/90 text-primary-foreground transition-colors duration-200"
+											onClick={() => {
+												mutateCart({
+													book_id: book.id,
+													quantity: 1,
+												});
+											}}
+											disabled={isLoading}
+										>
 											Add to Cart
 										</Button>
 									</div>
