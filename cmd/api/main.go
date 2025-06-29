@@ -66,7 +66,7 @@ func main() {
 		env:         env.GetString("ENVIRONMENT", "DEVELOPMENT"),
 		addr:        env.GetString("ADDR", ":8080"),
 		apiUrl:      env.GetString("API_URL", "localhost:8080"),
-		frontendURL: env.GetString("FRONTEND_URL", "http://localhost:5173"),
+		frontendURL: env.GetString("FRONT_END_URL_PROD", "http://localhost:5173"),
 		mail:        mailCgf,
 		auth:        authConfig,
 	}
