@@ -19,7 +19,7 @@ export function SignupForm({
 	className,
 	...props
 }: React.ComponentPropsWithoutRef<"div">) {
-	const [emailSent, setEmailSent] = useState<Boolean>(false);
+	const [emailSent, setEmailSent] = useState<boolean>(false);
 	const mutation = useMutation({
 		mutationFn: signUp,
 		onSuccess: () => {

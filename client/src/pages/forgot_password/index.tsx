@@ -18,7 +18,7 @@ const ForgotPasswordPage = () => {
 
 	const mutation = useMutation({
 		mutationFn: passwordResetRequest,
-		onError: (err: any) => {
+		onError: (err: { response?: { data?: { message?: string } } }) => {
 			setError(err?.response?.data?.message || "Something went wrong.");
 		},
 	});

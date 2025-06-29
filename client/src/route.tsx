@@ -9,12 +9,12 @@ import RootLayout from "./components/RootOutlet";
 import BooksPage from "./pages/books";
 import BookDetailPage from "./pages/books/BookDetail";
 import CartPage from "./pages/cart";
-const CategoriesPage = () => <div>Books Categories Page</div>;
-const WishlistPage = () => <div>Wishlist Page</div>;
-const OrdersPage = () => <div>Orders List Page</div>;
-const OrderDetailPage = () => <div>Order Detail Page</div>;
-const ProfilePage = () => <div>User Profile Page</div>;
-const CheckoutPage = () => <div>Checkout Page</div>;
+import CategoriesPage from "./pages/categories";
+import WishlistPage from "./pages/wishlist";
+import OrdersPage from "./pages/orders";
+import OrderDetailPage from "./pages/order_detail";
+import ProfilePage from "./pages/profile";
+import CheckoutPage from "./pages/checkout";
 export const router = createBrowserRouter([
 	{
 		path: "/",

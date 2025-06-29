@@ -159,7 +159,7 @@ const BookDetailPage = () => {
 		console.error("Related Books Error Details:", relatedBooksError);
 	}
 
-	let combinedRelatedBooks: Book[] = [];
+	const combinedRelatedBooks: Book[] = [];
 	const seenBookIds = new Set<number>();
 
 	if (!isLoadingRelatedBooks && !isErrorRelatedBooks) {

@@ -2,7 +2,7 @@ import axios from 'axios'
 
 
 const api = axios.create({
-    baseURL: import.meta.env.BACKEND_BASE_ENDPOINT || "http://localhost:8080/api/v1",
+    baseURL: import.meta.env.BACKEND_PROD_ENDPOINT || "https://book-bond.onrender.com/",
 })
 
 api.interceptors.request.use(
@@ -28,6 +28,6 @@ api.interceptors.response.use(
 );
 
 api.defaults.headers.common['Content-Type'] = 'application/json';
-api.defaults.timeout = 10000;
+api.defaults.timeout = 10000000;
 
 export default api
