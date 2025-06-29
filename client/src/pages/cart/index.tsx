@@ -112,12 +112,26 @@ const CartPage = () => {
 											max={item.stock}
 											value={item.quantity}
 											disabled={isPending}
-											onChange={(e) =>
+											onChange={(e) => {
+												const newQuantity = Number(e.target.value);
+												setCart((prevCart) => {
+													if (!prevCart) return prevCart;
+													return {
+														...prevCart,
+														items: prevCart.items.map((cartItem) =>
+															cartItem.id === item.id
+																? { ...cartItem, quantity: newQuantity }
+																: cartItem
+														),
+													};
+												});
+											}}
+											onBlur={(e) => {
 												mutateCart({
 													quantity: Number(e.target.value),
 													itemId: item.id,
-												})
-											}
+												});
+											}}
 											className="w-20"
 										/>
 									</label>
