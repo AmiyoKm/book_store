@@ -12,7 +12,6 @@ import (
 	"go.uber.org/zap"
 )
 
-
 const version string = "0.0.1"
 
 //	@title			BookBound API
@@ -37,7 +36,7 @@ func main() {
 	defer logger.Sync()
 
 	if err := godotenv.Load(); err != nil {
-		logger.Fatal(err)
+		logger.Info(err)
 	}
 	dbConfig := DbConfig{
 		addr:        env.GetString("DB_ADDR", "postgres://admin:adminpassword@localhost/book_store?sslmode=disable"),
